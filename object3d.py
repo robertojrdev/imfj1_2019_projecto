@@ -1,3 +1,4 @@
+import pygame
 import numpy as np
 from vector3 import *
 from quaternion import *
@@ -7,6 +8,7 @@ class Object3d:
         self.name = name
         self.position = vector3()
         self.rotation = quaternion(1,0,0,0)
+        self.local_rotation = quaternion(1,0,0,0)
         self.scale = vector3(1,1,1)
         self.mesh = None
         self.material = None
@@ -15,16 +17,49 @@ class Object3d:
     def get_matrix(self):
         return Object3d.get_prs_matrix(self.position, self.rotation, self.scale)
 
-    def render(self, screen, clip_matrix):
+    def render(self, screen, clip_matrix, camera_position):
         world_matrix = self.get_matrix()
         
         mesh_matrix = world_matrix @ clip_matrix
 
         if ((self.material != None) and (self.mesh)):
-            self.mesh.render(screen, mesh_matrix, self.material)
+            # self.mesh.render(screen, mesh_matrix, self.material)
+            c = self.material.color.tuple3()        
+
+            for poly in self.mesh.polygons:
+                tpoly = []
+                ppoly = []
+                for v in poly:
+                    vout = v.to_np4()
+                    vout = vout @ world_matrix
+                    transformed = from_np4(vout)
+
+                    tpoly.append(transformed)
+
+                edge1 = tpoly[1] - tpoly[0]
+                edge2 = tpoly[2] - tpoly[1]
+                normal = cross_product(edge1, edge2)
+
+                center  = (tpoly[0] + tpoly[1] + tpoly[2]) / 3
+                direction = center - camera_position
+
+                facingCameraDot = dot_product(normal, direction)
+
+                if(facingCameraDot < 0):
+                    for v in tpoly:
+                        vout = v.to_np4() @ clip_matrix
+                        projected = from_np4(vout)
+
+                        projected.x += screen.get_width() * 0.5
+                        projected.y = screen.get_height() * 0.5 - projected.y
+                        
+                        ppoly.append(( projected.x,  projected.y))
+
+                    pygame.draw.polygon(screen, c, ppoly, self.material.line_width)
 
         for child in self.children:
-            child.render(screen, mesh_matrix)
+            # child.rotation = child.local_rotation * self.rotation
+            child.render(screen, mesh_matrix, camera_position)
 
     def add_child(self, obj):
         self.children.append(obj)

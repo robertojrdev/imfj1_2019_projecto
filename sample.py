@@ -49,7 +49,7 @@ def main():
     # every second
     angle = 15
     axis = vector3(1,0.7,0.2)
-    axis = vector3(0,1,0)
+    axis = vector3(1,1,0)
     axis.normalize()
 
     # Timer

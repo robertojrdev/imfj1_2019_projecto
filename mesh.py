@@ -21,11 +21,16 @@ class Mesh:
 
         for poly in self.polygons:
             tpoly = []
+            spoly = []
             for v in poly:
                 vout = v.to_np4()
                 vout = vout @ matrix
+                transformed = from_np4(vout)
+
+                transformed.x += screen.get_width() * 0.5
+                transformed.y = screen.get_height() * 0.5 - transformed.y
                 
-                tpoly.append( ( screen.get_width() * 0.5 + vout[0] / vout[3], screen.get_height() * 0.5 - vout[1] / vout[3]) )
+                tpoly.append(( transformed.x,  transformed.y))
 
             pygame.draw.polygon(screen, c, tpoly, material.line_width)
 

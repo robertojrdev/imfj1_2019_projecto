@@ -16,5 +16,5 @@ class Scene:
         clip_matrix = camera_matrix @ projection_matrix
 
         for obj in self.objects:
-            obj.render(screen, clip_matrix)
+            obj.render(screen, clip_matrix, self.camera.position)
 

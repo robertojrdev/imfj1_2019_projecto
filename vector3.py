@@ -104,6 +104,9 @@ class vector3:
     def to_np4(self, w = 1):
         return np.array([self.x, self.y, self.z, w])
 
+def from_np4(v):
+    return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
+
 def dot_product(v1, v2):
     return v1.dot(v2)
 
