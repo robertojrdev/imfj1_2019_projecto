@@ -3,11 +3,12 @@ import pygame
 import pygame.freetype
 import time
 
-from scene import *
-from object3d import *
-from mesh import *
+# from scene import *
+# from object3d import *
+# from mesh import *
 from material import *
 from color import *
+from engine import *
 
 # Define a main function, just to keep things nice and tidy
 def main():
@@ -23,27 +24,32 @@ def main():
 
     # Create a scene
     scene = Scene("TestScene")
-    scene.camera = Camera(False, res_x, res_y)
+
+    camObj = GameObject("camera")
+    camera = camObj.add_component(Camera)
+    camera.setup(False, res_x, res_y)
+
+    scene.camera = camera
 
     # Moves the camera back 2 units
-    scene.camera.position -= vector3(0,0,2)
+    camObj.transform.position -= vector3(0,0,2)
 
     # Create a cube and place it in a scene, at position (0,0,0)
     # This cube has 1 unit of side, and is red
-    obj1 = Object3d("TestObject")
-    obj1.scale = vector3(1, 1, 1)
-    obj1.position = vector3(0, -1, 0)
-    obj1.mesh = Mesh.create_cube((1, 1, 1))
-    obj1.material = Material(color(1,0,0,1), "TestMaterial1")
+    obj1 = GameObject("TestObject")
+    obj1.transform.position = vector3(-1, -1, 0)
+    obj1_renderer = obj1.add_component(MeshRenderer)
+    obj1_renderer.mesh = Mesh.create_cube((1, 1, 1))
+    obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
     scene.add_object(obj1)
 
     # Create a second object, and add it as a child of the first object
     # When the first object rotates, this one will also mimic the transform
-    obj2 = Object3d("ChildObject")
-    obj2.position += vector3(0, 0.75, 0)
-    obj2.mesh = Mesh.create_cube((0.5, 0.5, 0.5))
-    obj2.material = Material(color(0,1,0,1), "TestMaterial2")
-    obj1.add_child(obj2)
+    # obj2 = Object3d("ChildObject")
+    # obj2.position += vector3(0, 0.75, 0)
+    # obj2.mesh = Mesh.create_cube((0.5, 0.5, 0.5))
+    # obj2.material = Material(color(0,1,0,1), "TestMaterial2")
+    # obj1.add_child(obj2)
 
     # Specify the rotation of the object. It will rotate 15 degrees around the axis given, 
     # every second
@@ -73,7 +79,7 @@ def main():
 
         # Rotates the object, considering the time passed (not linked to frame rate)
         q = from_rotation_vector((axis * math.radians(angle) * delta_time).to_np3())
-        obj1.rotation = q * obj1.rotation
+        obj1.transform.rotation = q * obj1.transform.rotation
 
         scene.render(screen)
 

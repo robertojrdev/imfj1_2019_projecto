@@ -104,6 +104,19 @@ class vector3:
     def to_np4(self, w = 1):
         return np.array([self.x, self.y, self.z, w])
 
+    @staticmethod
+    def one():
+        return vector3(1,1,1)
+    @staticmethod
+    def right():
+        return vector3(1,0,0)
+    @staticmethod
+    def up():
+        return vector3(0,1,0)
+    @staticmethod
+    def forward():
+        return vector3(0,0,1)
+
 def from_np4(v):
     return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
 
