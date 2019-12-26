@@ -37,7 +37,8 @@ def main():
     # Create a cube and place it in a scene, at position (0,0,0)
     # This cube has 1 unit of side, and is red
     obj1 = GameObject("TestObject")
-    obj1.transform.position = vector3(-1, -1, 0)
+    pos1 = vector3(0, 0, 5)
+    obj1.transform.position = pos1
     obj1_renderer = obj1.add_component(MeshRenderer)
     obj1_renderer.mesh = Mesh.create_cube((1, 1, 1))
     obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
@@ -50,13 +51,23 @@ def main():
     # obj2.mesh = Mesh.create_cube((0.5, 0.5, 0.5))
     # obj2.material = Material(color(0,1,0,1), "TestMaterial2")
     # obj1.add_child(obj2)
+    obj2 = GameObject("TestObject")
+    obj2.transform.position = vector3(0, 0.75, 0)
+    obj2.transform.scale = vector3(0.5, 0.5, 0.5)
+    obj2_renderer = obj2.add_component(MeshRenderer)
+    obj2_renderer.mesh = Mesh.create_cube((1, 1, 1))
+    obj2_renderer.material = Material(color(0,1,0,1), "TestMaterial1")
+    obj2.transform.set_parent(obj1.transform)
+    scene.add_object(obj2)
 
     # Specify the rotation of the object. It will rotate 15 degrees around the axis given, 
     # every second
-    angle = 15
+    angle = 50
     axis = vector3(1,0.7,0.2)
-    axis = vector3(1,1,0)
+    axis = vector3(1,.5,0)
     axis.normalize()
+
+    axis2 = vector3(1,0,0)
 
     # Timer
     delta_time = 0
@@ -80,6 +91,11 @@ def main():
         # Rotates the object, considering the time passed (not linked to frame rate)
         q = from_rotation_vector((axis * math.radians(angle) * delta_time).to_np3())
         obj1.transform.rotation = q * obj1.transform.rotation
+
+        # axis2 = from_np3(rotate_vectors(from_euler_angles((delta_time,0,0)), axis2.to_np3()))
+        # obj1.transform.position = pos1 + axis2
+
+        # obj2.transform.position = obj1.transform.up + obj1.transform.position
 
         scene.render(screen)
 

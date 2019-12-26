@@ -11,12 +11,33 @@ class Component:
 class Transform:
     def __init__(self, game_object):
         self.game_object = game_object
-        self.position = vector3()
-        self.rotation = quaternion(1, 0, 0, 0)
+        self.local_position = vector3()
+        self.local_rotation = quaternion(1, 0, 0, 0)
         self.scale = vector3.one()
         self._parent = None
+        self.children = []
 
     # PROPERTIES
+    def get_position(self):
+        if(self._parent):
+            translated_position = rotate_vectors(self._parent.rotation, self.local_position.to_np3())
+            translated_position = from_np3(translated_position)
+            return self._parent.position + translated_position
+        else:
+            return self.local_position
+
+    def set_position(self, value):
+        self.local_position = value
+
+    def get_rotation(self):
+        if(self._parent):
+            return self.local_rotation * self._parent.rotation
+        else:
+            return self.local_rotation
+
+    def set_rotation(self, value):
+        self.local_rotation = value
+
     def get_parent(self):
         return self._parent
 
@@ -35,7 +56,13 @@ class Transform:
         self._parent = parent
         self._parent.children.append(self)
 
+    def get_up(self):
+        return from_np3(rotate_vectors(self.rotation, vector3.up().to_np3()))
+
     parent = property(get_parent, set_parent)
+    rotation = property(get_rotation, set_rotation)
+    position = property(get_position, set_position)
+    up = property(get_up)
 
     def get_matrix(self):
         return Transform.get_prs_matrix(self.position, self.rotation, self.scale)
@@ -171,11 +198,11 @@ class Scene:
                 renderer.render(screen, clip_matrix, self.camera.transform.position)
 
 class Camera(ObjectBehaviour):
-    def setup(self, ortho, res_x, res_y):
+    def setup(self, ortho, res_x, res_y, fov = 33):
         self.ortho = ortho
         self.res_x = res_x
         self.res_y = res_y
-        self.fov = math.radians(60)
+        self.fov = math.radians(fov)
 
     def get_projection_matrix(self):
         self.proj_matrix = np.zeros((4, 4))
