@@ -116,10 +116,13 @@ class vector3:
     @staticmethod
     def forward():
         return vector3(0,0,1)
+    @staticmethod
+    def scale(v1, v2):
+        return vector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z)
 
 def from_np3(n):
     return vector3(n[0], n[1], n[2])
-    
+
 def from_np4(v):
     return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
 

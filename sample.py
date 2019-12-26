@@ -1,13 +1,13 @@
 # Import pygame into our program
-import pygame
-import pygame.freetype
+# import pygame
+# import pygame.freetype
 import time
 
 # from scene import *
 # from object3d import *
 # from mesh import *
-from material import *
-from color import *
+# from material import *
+# from color import *
 from engine import *
 
 # Define a main function, just to keep things nice and tidy
@@ -39,6 +39,7 @@ def main():
     obj1 = GameObject("TestObject")
     pos1 = vector3(0, 0, 5)
     obj1.transform.position = pos1
+    obj1.transform.scale = vector3(1,1,1)
     obj1_renderer = obj1.add_component(MeshRenderer)
     obj1_renderer.mesh = Mesh.create_cube((1, 1, 1))
     obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
@@ -46,11 +47,6 @@ def main():
 
     # Create a second object, and add it as a child of the first object
     # When the first object rotates, this one will also mimic the transform
-    # obj2 = Object3d("ChildObject")
-    # obj2.position += vector3(0, 0.75, 0)
-    # obj2.mesh = Mesh.create_cube((0.5, 0.5, 0.5))
-    # obj2.material = Material(color(0,1,0,1), "TestMaterial2")
-    # obj1.add_child(obj2)
     obj2 = GameObject("TestObject")
     obj2.transform.position = vector3(0, 0.75, 0)
     obj2.transform.scale = vector3(0.5, 0.5, 0.5)
@@ -60,18 +56,32 @@ def main():
     obj2.transform.set_parent(obj1.transform)
     scene.add_object(obj2)
 
+
+    obj3 = GameObject("TestObject")
+    obj3.transform.position = vector3(0, 0.75, 0)
+    obj3.transform.scale = vector3(0.5, 0.5, 0.5)
+    obj3_renderer = obj3.add_component(MeshRenderer)
+    obj3_renderer.mesh = Mesh.create_cube((1, 1, 1))
+    obj3_renderer.material = Material(color(0,0,1,1), "TestMaterial1")
+    obj3.transform.set_parent(obj2.transform)
+    scene.add_object(obj3)
+
     # Specify the rotation of the object. It will rotate 15 degrees around the axis given, 
     # every second
     angle = 50
     axis = vector3(1,0.7,0.2)
-    axis = vector3(1,.5,0)
+    axis = vector3(1,0,0)
     axis.normalize()
 
-    axis2 = vector3(1,0,0)
+    axis2 = vector3(0,0,1)
 
     # Timer
     delta_time = 0
     prev_time = time.time()
+    counter = 0
+    timer = 0
+
+    obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((math.radians(90),0,0))
 
     # Game loop, runs forever
     while (True):
@@ -89,8 +99,12 @@ def main():
         screen.fill((0,0,0))
 
         # Rotates the object, considering the time passed (not linked to frame rate)
-        q = from_rotation_vector((axis * math.radians(angle) * delta_time).to_np3())
-        obj1.transform.rotation = q * obj1.transform.rotation
+        # q = from_rotation_vector((axis * math.radians(angle) * delta_time).to_np3())
+        # obj1.transform.rotation = q * obj1.transform.rotation
+
+        obj1.transform.position = vector3(0,0,5 + math.sin(counter) * 5)
+        obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((0,math.radians(10 * delta_time),0))
+        obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((math.radians(10 * delta_time),0,0))
 
         # axis2 = from_np3(rotate_vectors(from_euler_angles((delta_time,0,0)), axis2.to_np3()))
         # obj1.transform.position = pos1 + axis2
@@ -105,6 +119,8 @@ def main():
         # Updates the timer, so we we know how long has it been since the last frame
         delta_time = time.time() - prev_time
         prev_time = time.time()
+        counter += delta_time
+        timer += delta_time
 
 
 # Run the main function

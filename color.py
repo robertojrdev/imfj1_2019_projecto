@@ -96,3 +96,9 @@ class color:
     def tuple4(self):
         return (self.r * 255, self.g * 255, self.b * 255, self.a * 255)
 
+    @staticmethod
+    def lerp(a, b, t):
+        if t < 0:
+            t = 0
+        return a + ((b - a) * t)
+

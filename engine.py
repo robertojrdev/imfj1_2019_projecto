@@ -13,7 +13,7 @@ class Transform:
         self.game_object = game_object
         self.local_position = vector3()
         self.local_rotation = quaternion(1, 0, 0, 0)
-        self.scale = vector3.one()
+        self.local_scale = vector3.one()
         self._parent = None
         self.children = []
 
@@ -22,7 +22,8 @@ class Transform:
         if(self._parent):
             translated_position = rotate_vectors(self._parent.rotation, self.local_position.to_np3())
             translated_position = from_np3(translated_position)
-            return self._parent.position + translated_position
+            scaled_position = vector3.scale(self._parent.scale, translated_position)
+            return self._parent.position + scaled_position
         else:
             return self.local_position
 
@@ -37,6 +38,15 @@ class Transform:
 
     def set_rotation(self, value):
         self.local_rotation = value
+
+    def get_scale(self):
+        if(self._parent):
+            return vector3.scale(self.local_scale, self._parent.scale)
+        else:
+            return self.local_scale
+
+    def set_scale(self, value):
+        self.local_scale = value
 
     def get_parent(self):
         return self._parent
@@ -62,6 +72,7 @@ class Transform:
     parent = property(get_parent, set_parent)
     rotation = property(get_rotation, set_rotation)
     position = property(get_position, set_position)
+    scale = property(get_scale, set_scale)
     up = property(get_up)
 
     def get_matrix(self):
@@ -140,11 +151,12 @@ class MeshRenderer(ObjectBehaviour):
 
     def render(self, screen, clip_matrix, camera_position):
         world_matrix = self.transform.get_matrix()
-        
-        mesh_matrix = world_matrix @ clip_matrix
+        # mesh_matrix = world_matrix @ clip_matrix
+
+        light = vector3(1,1,1).normalized()
 
         if ((self.material != None) and (self.mesh)):
-            c = self.material.color.tuple3()        
+            clr = self.material.color
 
             for poly in self.mesh.polygons:
                 tpoly = []
@@ -175,7 +187,11 @@ class MeshRenderer(ObjectBehaviour):
                         
                         ppoly.append(( projected.x,  projected.y))
 
-                    pygame.draw.polygon(screen, c, ppoly, self.material.line_width)
+                    light_dot = dot_product(light, -normal)
+                    clr = clr.lerp(color(0,0,0,0), clr, light_dot)
+
+                    pygame.draw.polygon(screen, clr.tuple3(), ppoly, 0)
+                    pygame.draw.polygon(screen, self.material.color.tuple3(), ppoly, self.material.line_width)
 
 class Scene:
     def __init__(self, name):
