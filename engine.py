@@ -153,15 +153,14 @@ class MeshRenderer(ObjectBehaviour):
         world_matrix = self.transform.get_matrix()
         # mesh_matrix = world_matrix @ clip_matrix
 
-        light = vector3(1,1,1).normalized()
+        tris = []
 
         if ((self.material != None) and (self.mesh)):
             clr = self.material.color
 
-            for poly in self.mesh.polygons:
+            for triangle in self.mesh.tris:
                 tpoly = []
-                ppoly = []
-                for v in poly:
+                for v in triangle.vertices:
                     vout = v.to_np4()
                     vout = vout @ world_matrix
                     transformed = from_np4(vout)
@@ -175,22 +174,12 @@ class MeshRenderer(ObjectBehaviour):
                 center  = (tpoly[0] + tpoly[1] + tpoly[2]) / 3
                 direction = center - camera_position
 
-                facingCameraDot = dot_product(normal, direction.normalized())
+                facingCameraDot = dot_product(normal.normalized(), direction.normalized())
 
                 if(facingCameraDot < 0):
-                    for v in tpoly:
-                        vout = v.to_np4() @ clip_matrix
-                        projected = from_np4(vout)
-
-                        projected.x += screen.get_width() * 0.5
-                        projected.y = screen.get_height() * 0.5 - projected.y
-                        
-                        ppoly.append(( projected.x,  projected.y))
-
                     c = color.lerp(color(0,0,0,0), clr, -facingCameraDot)
-
-                    pygame.draw.polygon(screen, c.tuple3(), ppoly, 0)
-                    pygame.draw.polygon(screen, self.material.color.tuple3(), ppoly, self.material.line_width)
+                    tris.append(Triangle(tpoly[0], tpoly[1], tpoly[2], c, direction.magnitude()))
+        return tris
 
 class Scene:
     def __init__(self, name):
@@ -207,10 +196,31 @@ class Scene:
 
         clip_matrix = camera_matrix @ projection_matrix
 
+        triangles = []
+
         for obj in self.objects:
             renderer = obj.get_component(MeshRenderer)
             if (renderer):
-                renderer.render(screen, clip_matrix, self.camera.transform.position)
+                triangles.extend(renderer.render(screen, clip_matrix, self.camera.transform.position))
+
+        triangles.sort()
+
+        for t in triangles:
+            proj_vert = []
+            for v in t.vertices:
+                vout = v.to_np4() @ clip_matrix
+                projected = from_np4(vout)
+
+                projected.x += screen.get_width() * 0.5
+                projected.y = screen.get_height() * 0.5 - projected.y
+                
+                proj_vert.append(( projected.x,  projected.y))
+            
+            pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 0)
+            # pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 2)
+            
+
+
 
 class Camera(ObjectBehaviour):
     def setup(self, ortho, res_x, res_y, fov = 33):
@@ -244,36 +254,17 @@ class Camera(ObjectBehaviour):
 class Mesh:
     def __init__(self, name = "UnknownMesh"):
         self.name = name
-        self.polygons = []
+        self.tris = []
 
     def offset(self, v):
         new_polys = []
-        for poly in self.polygons:
+        for poly in self.tris:
             new_poly = []
             for p in poly:
                 new_poly.append(p + v)
             new_polys.append(new_poly)
 
-        self.polygons = new_polys
-
-    def render(self, screen, matrix, material):
-        c = material.color.tuple3()        
-
-        for poly in self.polygons:
-            tpoly = []
-            spoly = []
-            for v in poly:
-                vout = v.to_np4()
-                vout = vout @ matrix
-                transformed = from_np4(vout)
-
-                transformed.x += screen.get_width() * 0.5
-                transformed.y = screen.get_height() * 0.5 - transformed.y
-                
-                tpoly.append(( transformed.x,  transformed.y))
-
-            pygame.draw.polygon(screen, c, tpoly, material.line_width)
-
+        self.tris = new_polys
 
     @staticmethod
     def create_cube(size, mesh = None):
@@ -296,13 +287,24 @@ class Mesh:
         if (mesh == None):
             mesh = Mesh("UnknownQuad")
 
-        poly = []
-        poly.append(origin + axis0 + axis1)
-        poly.append(origin + axis0 - axis1)
-        poly.append(origin - axis0 - axis1)
-        poly.append(origin - axis0 + axis1)
+        v1 = origin + axis0 + axis1
+        v2 = origin + axis0 - axis1
+        v3 = origin - axis0 - axis1
+        v4 = origin - axis0 + axis1
 
-        mesh.polygons.append(poly)
+        t1 = Triangle(v1, v2, v3)
+        t2 = Triangle(v1, v3, v4)
+
+        mesh.tris.append(t1)
+        mesh.tris.append(t2)
 
         return mesh
-    
+
+class Triangle:
+    def __init__(self, v1, v2, v3, color = None, depth = 0):
+        self.vertices = [v1,v2,v3]
+        self.color = color
+        self.depth = depth
+
+    def __lt__(self, other):
+        return self.depth > other.depth
