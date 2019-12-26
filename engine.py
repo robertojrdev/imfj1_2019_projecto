@@ -175,7 +175,7 @@ class MeshRenderer(ObjectBehaviour):
                 center  = (tpoly[0] + tpoly[1] + tpoly[2]) / 3
                 direction = center - camera_position
 
-                facingCameraDot = dot_product(normal, direction)
+                facingCameraDot = dot_product(normal, direction.normalized())
 
                 if(facingCameraDot < 0):
                     for v in tpoly:
@@ -187,10 +187,9 @@ class MeshRenderer(ObjectBehaviour):
                         
                         ppoly.append(( projected.x,  projected.y))
 
-                    light_dot = dot_product(light, -normal)
-                    clr = clr.lerp(color(0,0,0,0), clr, light_dot)
+                    c = color.lerp(color(0,0,0,0), clr, -facingCameraDot)
 
-                    pygame.draw.polygon(screen, clr.tuple3(), ppoly, 0)
+                    pygame.draw.polygon(screen, c.tuple3(), ppoly, 0)
                     pygame.draw.polygon(screen, self.material.color.tuple3(), ppoly, self.material.line_width)
 
 class Scene:
