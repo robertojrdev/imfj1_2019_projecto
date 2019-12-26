@@ -117,6 +117,9 @@ class vector3:
     def forward():
         return vector3(0,0,1)
 
+def from_np3(n):
+    return vector3(n[0], n[1], n[2])
+    
 def from_np4(v):
     return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
 
