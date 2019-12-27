@@ -45,25 +45,22 @@ def main():
     obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
     scene.add_object(obj1)
 
-    # Create a second object, and add it as a child of the first object
-    # When the first object rotates, this one will also mimic the transform
     obj2 = GameObject("TestObject")
-    obj2.transform.position = vector3(0, 0.75, 0)
-    obj2.transform.scale = vector3(0.5, 0.5, 0.5)
+    obj2.transform.position = vector3(2,0,0)
+    obj2.transform.scale = vector3(.5,.5,.5)
     obj2_renderer = obj2.add_component(MeshRenderer)
     obj2_renderer.mesh = Mesh.create_cube((1, 1, 1))
-    obj2_renderer.material = Material(color(0,1,0,1), "TestMaterial1")
-    obj2.transform.set_parent(obj1.transform)
+    obj2_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
+    obj2.transform.parent = obj1.transform
     scene.add_object(obj2)
 
-
     obj3 = GameObject("TestObject")
-    obj3.transform.position = vector3(0, 0.75, 0)
-    obj3.transform.scale = vector3(0.5, 0.5, 0.5)
+    obj3.transform.position = vector3(2,0,0)
+    obj3.transform.scale = vector3(.25,.25,.25)
     obj3_renderer = obj3.add_component(MeshRenderer)
     obj3_renderer.mesh = Mesh.create_cube((1, 1, 1))
-    obj3_renderer.material = Material(color(0,0,1,1), "TestMaterial1")
-    obj3.transform.set_parent(obj2.transform)
+    obj3_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
+    obj3.transform.parent = obj2.transform
     scene.add_object(obj3)
 
     # Specify the rotation of the object. It will rotate 15 degrees around the axis given, 
@@ -82,11 +79,16 @@ def main():
     timer = 0
 
     obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((math.radians(90),0,0))
+    # obj2.transform.rotation = obj2.transform.rotation * from_rotation_vector((math.radians(90),0,0))
+    # obj3.transform.rotation = obj3.transform.rotation * from_rotation_vector((math.radians(90),0,0))
+
+    input = Input()
 
     # Game loop, runs forever
     while (True):
-        # Process OS events
-        for event in pygame.event.get():
+        # # Process OS events
+        evt = pygame.event.get()
+        for event in evt:
             # Checks if the user closed the window
             if (event.type == pygame.QUIT):
                 # Exits the application immediately
@@ -95,6 +97,8 @@ def main():
                 if (event.key == pygame.K_ESCAPE):
                     return
 
+        input.update(evt)
+
         # Clears the screen with a very dark blue (0, 0, 20)
         screen.fill((0,0,0))
 
@@ -102,9 +106,18 @@ def main():
         # q = from_rotation_vector((axis * math.radians(angle) * delta_time).to_np3())
         # obj1.transform.rotation = q * obj1.transform.rotation
 
-        obj1.transform.position = vector3(0,0,5 + math.sin(counter) * 5)
-        obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((0,math.radians(10 * delta_time),0))
-        obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((math.radians(10 * delta_time),0,0))
+        if input.get_key(pygame.K_SPACE):
+            obj1.transform.position = vector3(0,0,5 + math.sin(counter) * 5)
+            obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((0,math.radians(10 * delta_time),0))
+            obj1.transform.rotation = obj1.transform.rotation * from_rotation_vector((math.radians(10 * delta_time),0,0))
+
+        # obj2.transform.position = vector3(1,0,5 + math.sin(counter) * 5)
+        # obj2.transform.rotation = obj2.transform.rotation * from_rotation_vector((0,math.radians(10 * delta_time),0))
+        # obj2.transform.rotation = obj2.transform.rotation * from_rotation_vector((math.radians(10 * delta_time),0,0))
+
+        # obj3.transform.position = vector3(-1,0,5 + math.sin(counter) * 5)
+        # obj3.transform.rotation = obj3.transform.rotation * from_rotation_vector((0,math.radians(10 * delta_time),0))
+        # obj3.transform.rotation = obj3.transform.rotation * from_rotation_vector((math.radians(10 * delta_time),0,0))
 
         # axis2 = from_np3(rotate_vectors(from_euler_angles((delta_time,0,0)), axis2.to_np3()))
         # obj1.transform.position = pos1 + axis2

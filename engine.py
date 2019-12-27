@@ -217,7 +217,7 @@ class Scene:
                 proj_vert.append(( projected.x,  projected.y))
             
             pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 0)
-            # pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 2)
+            pygame.draw.polygon(screen, (10,10,10), proj_vert, 1)
             
 
 
@@ -308,3 +308,76 @@ class Triangle:
 
     def __lt__(self, other):
         return self.depth > other.depth
+
+class Input:
+    def __init__(self):
+        self.keys = []
+
+    def update(self, evt):
+        #update up and down values from previous update
+        for k in self.keys:
+            k.update()
+
+        #read the new events
+        for e in evt:
+            if(e.type == pygame.KEYDOWN or e.type == pygame.KEYUP):
+                self.update_key(e.key, e.type)
+
+    def update_key(self, key, state):
+        for k in self.keys:
+            if k.key == key:
+                k.update(state)
+                return
+        
+        k = self.add_key(key)
+        k.update(state)
+        
+    def add_key(self, key):
+        k = Key(key)
+        self.keys.append(k)
+        return k
+
+    def get_key(self, key):
+        for k in self.keys:
+            if k.key == key:
+                return k.holding
+
+        return False
+
+    def get_key_down(self, key):
+        for k in self.keys:
+            if k.key == key:
+                return k.down
+
+        return False
+
+    def get_key_up(self, key):
+        for k in self.keys:
+            if k.key == key:
+                return k.up
+
+        return False
+
+
+class Key:
+    def __init__(self, key):
+        self.key = key
+        self.down = False
+        self.holding = False
+        self.up = False
+
+    def update(self, state = None):
+        if(state == None):
+            if(self.down == True):
+                self.down = False
+            if(self.up == True):
+                self.up = False
+        elif(state == pygame.KEYDOWN):
+            self.down = True
+            self.holding = True
+            self.up = False
+        elif(state == pygame.KEYUP):
+            self.down = False
+            self.holding = False
+            self.up = True
+
