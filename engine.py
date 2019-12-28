@@ -158,10 +158,7 @@ class MeshRenderer(ObjectBehaviour):
             for triangle in self.mesh.tris:
                 tpoly = []
                 for v in triangle.vertices:
-                    vout = v.to_np4()
-                    vout = vout @ world_matrix
-                    transformed = from_np4(vout)
-
+                    transformed = vector3.multiply_matrix(v, world_matrix)
                     tpoly.append(transformed)
 
                 edge1 = tpoly[1] - tpoly[0]
@@ -205,10 +202,9 @@ class Scene:
         for t in triangles:
             proj_vert = []
             for v in t.vertices:
-                vout = v.to_np4() @ clip_matrix
-                projected = from_np4(vout)
+                projected = vector3.multiply_matrix(v, clip_matrix)
 
-                projected.x += screen.get_width() * 0.5
+                projected.x = screen.get_width() * 0.5 + projected.x
                 projected.y = screen.get_height() * 0.5 - projected.y
                 
                 proj_vert.append(( projected.x,  projected.y))
