@@ -20,10 +20,7 @@ class Transform:
     # PROPERTIES
     def get_position(self):
         if(self._parent):
-            translated_position = rotate_vectors(self._parent.rotation, self.local_position.to_np3())
-            translated_position = from_np3(translated_position)
-            scaled_position = vector3.scale(self._parent.scale, translated_position)
-            return self._parent.position + scaled_position
+            return vector3.multiply_matrix(self.local_position, self.parent.get_matrix())
         else:
             return self.local_position
 
