@@ -1,7 +1,9 @@
 import pygame
+import time
 from vector3 import *
 from quaternion import *
 from material import *
+
 
 class Component:
     def __init__(self, game_object):
@@ -134,7 +136,7 @@ class ObjectBehaviour(Component):
     def start(self):
         pass
 
-    def update(self, delta_time):
+    def update(self, delta_time, input):
         pass
 
     def on_destroy(self):
@@ -166,6 +168,7 @@ class MeshRenderer(ObjectBehaviour):
     def awake(self):
         self.material = Material(color(1,1,1,1), "mat")
         self.mesh = Mesh()
+        self.debug_mode = False
 
     def render(self, screen, clip_matrix, camera_position):
         world_matrix = self.transform.get_matrix()
@@ -195,8 +198,9 @@ class MeshRenderer(ObjectBehaviour):
                 if(facingCameraDot < 0):
                     c = clr * -facingCameraDot
                     j = colors[math.floor(i / 2)]
-                    # c = color(j[0],j[1],j[2],1) * -facingCameraDot
-                    # c = color(j[0],j[1],j[2],1)
+                    if(self.debug_mode):
+                        c = color(j[0],j[1],j[2],1)
+                        # c = color(j[0],j[1],j[2],1) * -facingCameraDot
                     tris.append(Triangle(tpoly[0], tpoly[1], tpoly[2], c, direction.magnitude()))
 
                 i += 1
@@ -436,7 +440,6 @@ class Input:
                 return b.up
         return False
 
-
 class Key:
     def __init__(self, key):
         self.key = key
@@ -458,4 +461,68 @@ class Key:
             self.down = False
             self.holding = False
             self.up = True
+
+class Application:
+    def __init__(self, objects):
+        # Initialize pygame, with the default parameters
+        pygame.init()
+
+        # Define the size/resolution of our window
+        res_x = 640
+        res_y = 480
+
+        # Create a window and a display surface
+        screen = pygame.display.set_mode((res_x, res_y))
+
+        # Create a scene
+        scene = Scene("TestScene")
+
+        # Create a camera and add it to the scene
+        camObj = GameObject("camera")
+        camera = camObj.add_component(Camera)
+        camera.setup(False, res_x, res_y)
+        scene.camera = camera
+
+        # Add objects to the scene
+        for o in objects:
+            scene.add_object(o)
+        
+        # Timer
+        delta_time = 0
+        prev_time = time.time()
+
+        input = Input()
+
+            # Game loop, runs forever
+        while (True):
+            # # Process OS events
+            evt = pygame.event.get()
+            for event in evt:
+                # Checks if the user closed the window
+                if (event.type == pygame.QUIT):
+                    # Exits the application immediately
+                    return
+                elif (event.type == pygame.KEYDOWN):
+                    if (event.key == pygame.K_ESCAPE):
+                        return
+
+            input.update(evt)
+
+            # Clears the screen with a very dark blue (0, 0, 20)
+            screen.fill((0,0,0))
+
+            # Call update
+            for o in objects:
+                for c in o.components:
+                    c.update(delta_time, input)
+
+            # Render Scene
+            scene.render(screen)
+
+            # Swaps the back and front buffer, effectively displaying what we rendered
+            pygame.display.flip()
+
+            # Updates the timer, so we we know how long has it been since the last frame
+            delta_time = time.time() - prev_time
+            prev_time = time.time()
 
