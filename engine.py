@@ -136,7 +136,7 @@ class ObjectBehaviour(Component):
     def start(self):
         pass
 
-    def update(self, delta_time, input):
+    def update(self, delta_time):
         pass
 
     def on_destroy(self):
@@ -345,97 +345,107 @@ class Triangle:
         return self.depth > other.depth
 
 class Input:
-    def __init__(self):
-        self.keys = []
-        self.mouse_buttons = []
-        self.mouse_pos = vector3(0,0,0)
-        self.mouse_delta = vector3(0,0,0)
+    keys = []
+    mouse_buttons = []
+    mouse_pos = vector3(0,0,0)
+    mouse_delta = vector3(0,0,0)
 
-    def update(self, evt):
+    @staticmethod
+    def update(evt):
         #update up and down values from previous update
-        for k in self.keys:
+        for k in Input.keys:
             k.update()
 
-        for b in self.mouse_buttons:
+        for b in Input.mouse_buttons:
             b.update()
 
         # reset mouse motion
-        self.mouse_delta = vector3()
+        Input.mouse_delta = vector3()
 
         #read the new events
         for e in evt:
             if(e.type == pygame.KEYDOWN or e.type == pygame.KEYUP):
-                self.update_key(e.key, e.type)
+                Input.update_key(e.key, e.type)
             elif(e.type == pygame.MOUSEMOTION):
                 pos = pygame.mouse.get_pos()
                 delta = pygame.mouse.get_rel()
-                self.mouse_pos = vector3(pos[0], pos[0], 0)
-                self.mouse_delta = vector3(delta[0], delta[0], 0)
+                Input.mouse_pos = vector3(pos[0], pos[0], 0)
+                Input.mouse_delta = vector3(delta[0], delta[0], 0)
             # elif(e.type == pygame.MOUSEBUTTONDOWN or e.type == pygame.MOUSEBUTTONUP):
             #     self.update_mouse_button()
 
     # KEYBOARD
-    def update_key(self, key, state):
-        for k in self.keys:
+    @staticmethod
+    def update_key(key, state):
+        for k in Input.keys:
             if k.key == key:
                 k.update(state)
                 return
         
-        k = self.add_key(key)
+        k = Input.add_key(key)
         k.update(state)
         
-    def add_key(self, key):
+    @staticmethod
+    def add_key(key):
         k = Key(key)
-        self.keys.append(k)
+        Input.keys.append(k)
         return k
 
-    def get_key(self, key):
-        for k in self.keys:
+    @staticmethod
+    def get_key(key):
+        for k in Input.keys:
             if k.key == key:
                 return k.holding
         return False
 
-    def get_key_down(self, key):
-        for k in self.keys:
+    @staticmethod
+    def get_key_down(key):
+        for k in Input.keys:
             if k.key == key:
                 return k.down
         return False
 
-    def get_key_up(self, key):
-        for k in self.keys:
+    @staticmethod
+    def get_key_up(key):
+        for k in Input.keys:
             if k.key == key:
                 return k.up
         return False
     
     # MOUSE
-    def update_mouse_button(self, button, state):
-        for b in self.mouse_buttons:
+    @staticmethod
+    def update_mouse_button(button, state):
+        for b in Input.mouse_buttons:
             if b.key == button:
                 b.update(state)
                 return
         
-        b = self.add_mouse_button(button)
+        b = Input.add_mouse_button(button)
         b.update(state)
 
-    def add_mouse_button(self, button):
+    @staticmethod
+    def add_mouse_button(button):
         b = Key(button)
-        self.mouse_buttons.append(b)
+        Input.mouse_buttons.append(b)
         return b
 
-    def get_mouse_button(self, button):
-        for b in self.mouse_buttons:
+    @staticmethod
+    def get_mouse_button(button):
+        for b in Input.mouse_buttons:
             if b.key == button:
                 return b.holding
         return False
 
-    def get_mouse_button_down(self, button):
-        for b in self.mouse_buttons:
+    @staticmethod
+    def get_mouse_button_down(button):
+        for b in Input.mouse_buttons:
             if b.key == button:
                 return b.down
         return False
 
-    def get_mouse_button_up(self, button):
-        for b in self.mouse_buttons:
+    @staticmethod
+    def get_mouse_button_up(button):
+        for b in Input.mouse_buttons:
             if b.key == button:
                 return b.up
         return False
@@ -463,35 +473,39 @@ class Key:
             self.up = True
 
 class Application:
+    screen = None
+
+    # Define the size/resolution of our window
+    res_x = 640
+    res_y = 480
+
+    scene = None
+
     def __init__(self, objects):
         # Initialize pygame, with the default parameters
         pygame.init()
 
-        # Define the size/resolution of our window
-        res_x = 640
-        res_y = 480
-
         # Create a window and a display surface
-        screen = pygame.display.set_mode((res_x, res_y))
+        Application.screen = pygame.display.set_mode((Application.res_x, Application.res_y))
 
         # Create a scene
-        scene = Scene("TestScene")
+        Application.scene = Scene("TestScene")
 
         # Create a camera and add it to the scene
         camObj = GameObject("camera")
         camera = camObj.add_component(Camera)
-        camera.setup(False, res_x, res_y)
-        scene.camera = camera
+        camera.setup(False, Application.res_x, Application.res_y)
+        Application.scene.camera = camera
 
         # Add objects to the scene
         for o in objects:
-            scene.add_object(o)
+            Application.scene.add_object(o)
         
         # Timer
         delta_time = 0
         prev_time = time.time()
 
-        input = Input()
+        Application.input = Input()
 
             # Game loop, runs forever
         while (True):
@@ -506,18 +520,18 @@ class Application:
                     if (event.key == pygame.K_ESCAPE):
                         return
 
-            input.update(evt)
+            Input.update(evt)
 
             # Clears the screen with a very dark blue (0, 0, 20)
-            screen.fill((0,0,0))
+            Application.screen.fill((0,0,0))
 
             # Call update
-            for o in objects:
+            for o in Application.scene.objects:
                 for c in o.components:
-                    c.update(delta_time, input)
+                    c.update(delta_time)
 
             # Render Scene
-            scene.render(screen)
+            Application.scene.render(Application.screen)
 
             # Swaps the back and front buffer, effectively displaying what we rendered
             pygame.display.flip()

@@ -4,9 +4,9 @@ class Cube(ObjectBehaviour):
     def awake(self):
         self.counter = 0
 
-    def update(self, delta_time, input):
+    def update(self, delta_time):
         self.counter += delta_time
-        if input.get_key(pygame.K_SPACE):
+        if Input.get_key(pygame.K_SPACE):
             self.counter += delta_time
             x = math.sin(self.counter)
             y = math.cos(self.counter * .5)
