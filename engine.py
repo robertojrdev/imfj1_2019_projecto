@@ -66,11 +66,19 @@ class Transform:
     def get_up(self):
         return from_np3(rotate_vectors(self.rotation, vector3.up().to_np3()))
 
+    def get_right(self):
+        return from_np3(rotate_vectors(self.rotation, vector3.right().to_np3()))
+
+    def get_forward(self):
+        return from_np3(rotate_vectors(self.rotation, vector3.forward().to_np3()))
+
     parent = property(get_parent, set_parent)
     rotation = property(get_rotation, set_rotation)
     position = property(get_position, set_position)
     scale = property(get_scale, set_scale)
     up = property(get_up)
+    right = property(get_right)
+    forward = property(get_forward)
 
     def get_matrix(self):
         return Transform.get_prs_matrix(self.position, self.rotation, self.scale)
