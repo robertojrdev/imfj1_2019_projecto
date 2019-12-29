@@ -212,17 +212,60 @@ class Scene:
         self.objects.append(obj)
 
     def render(self, screen):
-        camera_matrix = self.camera.get_camera_matrix()
-        projection_matrix = self.camera.get_projection_matrix()
+        if self.camera:
+            self.camera.render(self.objects, screen)
+            
+class Camera(ObjectBehaviour):
+    def setup(self, ortho, res_x, res_y, fov = 33):
+        self.ortho = ortho
+        self.res_x = res_x
+        self.res_y = res_y
+        self.fov = math.radians(fov)
+        self.near = 0.1
+        self.far = 1000
 
+    def get_projection_matrix(self):
+        self.proj_matrix = np.zeros((4, 4))
+        if (self.ortho):
+            self.proj_matrix[0,0] = self.res_x * 0.5
+            self.proj_matrix[1,1] = self.res_y * 0.5
+            self.proj_matrix[3,0] = 0
+            self.proj_matrix[3,1] = 0
+            self.proj_matrix[3,3] = 1
+        else:
+            t = math.tan(self.fov)
+            a = self.res_y / self.res_x
+            self.proj_matrix[0,0] = 0.5 * self.res_x / t
+            self.proj_matrix[1,1] = 0.5 * self.res_y / (a * t)
+            self.proj_matrix[2,2] = self.far / (self.far - self.near)
+            self.proj_matrix[2,3] = 1
+            self.proj_matrix[3,0] = 0
+            self.proj_matrix[3,2] = (-self.far * self.near) / (self.far - self.near)
+            self.proj_matrix[3,3] = 0
+            
+            # self.proj_matrix[0,0] = 0.5 * self.res_x / t
+            # self.proj_matrix[1,1] = 0.5 * self.res_y / (a * t)
+            # self.proj_matrix[2,2] = 1
+            # self.proj_matrix[2,3] = 1
+            # self.proj_matrix[3,0] = 0
+            # self.proj_matrix[3,1] = 0
+
+        return self.proj_matrix
+
+    def get_camera_matrix(self):
+        return Transform.get_prs_matrix(-self.transform.position, self.transform.rotation.inverse(), vector3(1,1,1))
+
+    def render(self, objects, screen):
+        camera_matrix = self.get_camera_matrix()
+        projection_matrix = self.get_projection_matrix()
         clip_matrix = camera_matrix @ projection_matrix
 
         triangles = []
 
-        for obj in self.objects:
+        for obj in objects:
             renderer = obj.get_component(MeshRenderer)
             if (renderer):
-                triangles.extend(renderer.render(screen, clip_matrix, self.camera.transform.position))
+                triangles.extend(renderer.render(screen, projection_matrix, self.transform.position))
 
         triangles.sort()
 
@@ -238,38 +281,6 @@ class Scene:
             
             pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 0)
             pygame.draw.polygon(screen, (10,10,10), proj_vert, 1)
-            
-
-
-
-class Camera(ObjectBehaviour):
-    def setup(self, ortho, res_x, res_y, fov = 33):
-        self.ortho = ortho
-        self.res_x = res_x
-        self.res_y = res_y
-        self.fov = math.radians(fov)
-
-    def get_projection_matrix(self):
-        self.proj_matrix = np.zeros((4, 4))
-        if (self.ortho):
-            self.proj_matrix[0,0] = self.res_x * 0.5
-            self.proj_matrix[1,1] = self.res_y * 0.5
-            self.proj_matrix[3,0] = 0
-            self.proj_matrix[3,1] = 0
-            self.proj_matrix[3,3] = 1
-        else:
-            t = math.tan(self.fov)
-            a = self.res_y / self.res_x
-            self.proj_matrix[0,0] = 0.5 * self.res_x / t
-            self.proj_matrix[1,1] = 0.5 * self.res_y / (a * t)
-            self.proj_matrix[2,3] = 1
-            self.proj_matrix[3,0] = 0
-            self.proj_matrix[3,1] = 0
-
-        return self.proj_matrix
-
-    def get_camera_matrix(self):
-        return Transform.get_prs_matrix(-self.transform.position, self.transform.rotation.inverse(), vector3(1,1,1))
 
 class Mesh:
     def __init__(self, name = "UnknownMesh"):
