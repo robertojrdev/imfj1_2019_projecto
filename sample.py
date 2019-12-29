@@ -4,9 +4,16 @@ from scripts.cube_script import *
 # Define a main function, just to keep things nice and tidy
 def main():
 
-    # Define all objects and it's initial configuration 
-    # to start the application
-    objs = []
+    # Create an application instance
+    app = Application(840, 680)
+
+    # Define all initial GameObjects and it's initial configurations
+    # All gameobjects are added automatically to the active scene
+    
+    # Create a camera - when a camera is created it becomes the active camera in the active scene
+    camObj = GameObject("camera")
+    camera = camObj.add_component(Camera)
+    camera.setup(False)
 
     obj1 = GameObject("TestObject")
     pos1 = vector3(0, 0, 5)
@@ -16,7 +23,6 @@ def main():
     obj1_renderer.mesh = Mesh.create_cube((1, 1, 1))
     obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
     obj1.add_component(Cube)
-    objs.append(obj1)
 
     obj2 = GameObject("TestObject")
     obj2.transform.position = vector3(0,.75,0)
@@ -25,7 +31,6 @@ def main():
     obj2_renderer.mesh = Mesh.create_cube((1, 1, 1))
     obj2_renderer.material = Material(color(0,1,0,1), "TestMaterial1")
     obj2.transform.parent = obj1.transform
-    objs.append(obj2)
 
     obj3 = GameObject("TestObject")
     obj3.transform.position = vector3(0,.75,0)
@@ -34,9 +39,9 @@ def main():
     obj3_renderer.mesh = Mesh.create_cube((1, 1, 1))
     obj3_renderer.material = Material(color(0,0,1,1), "TestMaterial1")
     obj3.transform.parent = obj2.transform
-    objs.append(obj3)
 
-    Application(objs)
+    # Start the application loop
+    app.init()
     return
 
 

@@ -148,6 +148,7 @@ class GameObject():
         self.transform = None
         self.components = []
         self.transform = Transform(self)
+        Application.scene.add_object(self)
 
     def add_component(self, comp):
         if(issubclass(comp, Component) == False):
@@ -215,40 +216,44 @@ class Scene:
     def add_object(self, obj):
         self.objects.append(obj)
 
-    def render(self, screen):
+    def render(self):
         if self.camera:
-            self.camera.render(self.objects, screen)
+            self.camera.render(self.objects)
             
 class Camera(ObjectBehaviour):
-    def setup(self, ortho, res_x, res_y, fov = 33):
+    def awake(self):
+        Application.scene.camera = self
+        self.background_color = color(.01,.01,.025)
+
+    def setup(self, ortho, fov = 33):
         self.ortho = ortho
-        self.res_x = res_x
-        self.res_y = res_y
         self.fov = math.radians(fov)
         self.near = 0.1
         self.far = 1000
 
     def get_projection_matrix(self):
         self.proj_matrix = np.zeros((4, 4))
+        x = Application.screen.get_width()
+        y = Application.screen.get_height()
         if (self.ortho):
-            self.proj_matrix[0,0] = self.res_x * 0.5
-            self.proj_matrix[1,1] = self.res_y * 0.5
+            self.proj_matrix[0,0] = x * 0.5
+            self.proj_matrix[1,1] = y * 0.5
             self.proj_matrix[3,0] = 0
             self.proj_matrix[3,1] = 0
             self.proj_matrix[3,3] = 1
         else:
             t = math.tan(self.fov)
-            a = self.res_y / self.res_x
-            self.proj_matrix[0,0] = 0.5 * self.res_x / t
-            self.proj_matrix[1,1] = 0.5 * self.res_y / (a * t)
+            a = y / x
+            self.proj_matrix[0,0] = 0.5 * x / t
+            self.proj_matrix[1,1] = 0.5 * y / (a * t)
             self.proj_matrix[2,2] = self.far / (self.far - self.near)
             self.proj_matrix[2,3] = 1
             self.proj_matrix[3,0] = 0
             self.proj_matrix[3,2] = (-self.far * self.near) / (self.far - self.near)
             self.proj_matrix[3,3] = 0
             
-            # self.proj_matrix[0,0] = 0.5 * self.res_x / t
-            # self.proj_matrix[1,1] = 0.5 * self.res_y / (a * t)
+            # self.proj_matrix[0,0] = 0.5 * x / t
+            # self.proj_matrix[1,1] = 0.5 * y / (a * t)
             # self.proj_matrix[2,2] = 1
             # self.proj_matrix[2,3] = 1
             # self.proj_matrix[3,0] = 0
@@ -259,7 +264,10 @@ class Camera(ObjectBehaviour):
     def get_camera_matrix(self):
         return Transform.get_prs_matrix(-self.transform.position, self.transform.rotation.inverse(), vector3(1,1,1))
 
-    def render(self, objects, screen):
+    def render(self, objects):
+        # Paint the background
+        Application.screen.fill(self.background_color.tuple3())
+
         camera_matrix = self.get_camera_matrix()
         projection_matrix = self.get_projection_matrix()
         clip_matrix = camera_matrix @ projection_matrix
@@ -269,7 +277,7 @@ class Camera(ObjectBehaviour):
         for obj in objects:
             renderer = obj.get_component(MeshRenderer)
             if (renderer):
-                triangles.extend(renderer.render(screen, projection_matrix, self.transform.position))
+                triangles.extend(renderer.render(Application.screen, projection_matrix, self.transform.position))
 
         triangles.sort()
 
@@ -278,13 +286,13 @@ class Camera(ObjectBehaviour):
             for v in t.vertices:
                 projected = vector3.multiply_matrix(v, clip_matrix)
 
-                projected.x = screen.get_width() * 0.5 + projected.x
-                projected.y = screen.get_height() * 0.5 - projected.y
+                projected.x = Application.screen.get_width() * 0.5 + projected.x
+                projected.y = Application.screen.get_height() * 0.5 - projected.y
                 
                 proj_vert.append(( projected.x,  projected.y))
             
-            pygame.draw.polygon(screen, t.color.tuple3(), proj_vert, 0)
-            pygame.draw.polygon(screen, (10,10,10), proj_vert, 1)
+            pygame.draw.polygon(Application.screen, t.color.tuple3(), proj_vert, 0)
+            pygame.draw.polygon(Application.screen, (10,10,10), proj_vert, 1)
 
 class Mesh:
     def __init__(self, name = "UnknownMesh"):
@@ -474,40 +482,25 @@ class Key:
 
 class Application:
     screen = None
-
-    # Define the size/resolution of our window
-    res_x = 640
-    res_y = 480
-
     scene = None
 
-    def __init__(self, objects):
+
+    def __init__(self, res_x = 640, res_y = 480):
         # Initialize pygame, with the default parameters
         pygame.init()
 
         # Create a window and a display surface
-        Application.screen = pygame.display.set_mode((Application.res_x, Application.res_y))
+        Application.screen = pygame.display.set_mode((res_x, res_y))
 
         # Create a scene
-        Application.scene = Scene("TestScene")
+        Application.scene = Scene("Main Scene")
 
-        # Create a camera and add it to the scene
-        camObj = GameObject("camera")
-        camera = camObj.add_component(Camera)
-        camera.setup(False, Application.res_x, Application.res_y)
-        Application.scene.camera = camera
-
-        # Add objects to the scene
-        for o in objects:
-            Application.scene.add_object(o)
-        
+    def init(self):
         # Timer
         delta_time = 0
         prev_time = time.time()
 
-        Application.input = Input()
-
-            # Game loop, runs forever
+        # Game loop, runs forever
         while (True):
             # # Process OS events
             evt = pygame.event.get()
@@ -522,16 +515,13 @@ class Application:
 
             Input.update(evt)
 
-            # Clears the screen with a very dark blue (0, 0, 20)
-            Application.screen.fill((0,0,0))
-
             # Call update
             for o in Application.scene.objects:
                 for c in o.components:
                     c.update(delta_time)
 
             # Render Scene
-            Application.scene.render(Application.screen)
+            Application.scene.render()
 
             # Swaps the back and front buffer, effectively displaying what we rendered
             pygame.display.flip()
