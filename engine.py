@@ -84,12 +84,15 @@ class Transform:
         return Transform.get_prs_matrix(self.position, self.rotation, self.scale)
 
     @staticmethod
-    def get_prs_matrix(position, rotation, scale):
+    def get_position_matrix(position):
         trans = np.identity(4)
         trans[3,0] = position.x
         trans[3,1] = position.y
-        trans[3,2] = position.z    
+        trans[3,2] = position.z
+        return trans
 
+    @staticmethod
+    def get_rotation_matrix(rotation):
         qrot  = as_rotation_matrix(rotation)
         rotation_matrix = np.identity(4)
         rotation_matrix[0][0] = qrot[0][0]
@@ -102,11 +105,21 @@ class Transform:
         rotation_matrix[2][1] = qrot[2][1]
         rotation_matrix[2][2] = qrot[2][2]
         rotation_matrix[3,3] = 1
+        return rotation_matrix
 
+    @staticmethod
+    def get_scale_matrix(scale):
         scale_matrix = np.identity(4)
         scale_matrix[0,0] = scale.x    
         scale_matrix[1,1] = scale.y
-        scale_matrix[2,2] = scale.z  
+        scale_matrix[2,2] = scale.z 
+        return scale_matrix
+
+    @staticmethod
+    def get_prs_matrix(position, rotation, scale):
+        trans = Transform.get_position_matrix(position)
+        rotation_matrix = Transform.get_rotation_matrix(rotation)
+        scale_matrix = Transform.get_scale_matrix(scale)
 
         return scale_matrix @ rotation_matrix @ trans
 
