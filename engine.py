@@ -4,7 +4,6 @@ from vector3 import *
 from quaternion import *
 from material import *
 
-
 class Component:
     def __init__(self, game_object):
         self.game_object = game_object
@@ -212,6 +211,11 @@ class Scene:
         self.name = name
         self.camera = None
         self.objects = []
+
+    # This function will be called when this scene is created to 
+    # instantiate the initial game objects
+    def instantiate_objects(self):
+        pass
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -484,18 +488,25 @@ class Application:
     screen = None
     scene = None
 
-
-    def __init__(self, res_x = 640, res_y = 480):
+    @staticmethod
+    def init(scene, res_x = 640, res_y = 480):
         # Initialize pygame, with the default parameters
         pygame.init()
 
         # Create a window and a display surface
         Application.screen = pygame.display.set_mode((res_x, res_y))
 
-        # Create a scene
-        Application.scene = Scene("Main Scene")
+        # Set scene
+        Application.load_scene(scene)
 
-    def init(self):
+    @staticmethod
+    def load_scene(scene):
+        # Set scene
+        Application.scene = scene(str(scene))
+        Application.scene.instantiate_objects()
+
+    @staticmethod
+    def run():
         # Timer
         delta_time = 0
         prev_time = time.time()

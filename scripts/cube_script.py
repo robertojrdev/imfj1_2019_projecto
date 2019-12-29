@@ -5,7 +5,6 @@ class Cube(ObjectBehaviour):
         self.counter = 0
 
     def update(self, delta_time):
-        self.counter += delta_time
         if Input.get_key(pygame.K_SPACE):
             self.counter += delta_time
             x = math.sin(self.counter)
