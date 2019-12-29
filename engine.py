@@ -148,13 +148,15 @@ class MeshRenderer(ObjectBehaviour):
 
     def render(self, screen, clip_matrix, camera_position):
         world_matrix = self.transform.get_matrix()
-        # mesh_matrix = world_matrix @ clip_matrix
+        mesh_matrix = world_matrix @ clip_matrix
 
         tris = []
 
         if ((self.material != None) and (self.mesh)):
             clr = self.material.color
 
+            colors = [(1,0,0),(0,1,0),(0,0,1),(.5,.5,0),(.5,0,.5),(0,.5,.5)]
+            i = 0
             for triangle in self.mesh.tris:
                 tpoly = []
                 for v in triangle.vertices:
@@ -171,8 +173,13 @@ class MeshRenderer(ObjectBehaviour):
                 facingCameraDot = dot_product(normal.normalized(), direction.normalized())
 
                 if(facingCameraDot < 0):
-                    c = color.lerp(color(0,0,0,0), clr, -facingCameraDot)
+                    # c = clr * -facingCameraDot
+                    j = colors[math.floor(i / 2)]
+                    # c = color(j[0],j[1],j[2],1) * -facingCameraDot
+                    c = color(j[0],j[1],j[2],1)
                     tris.append(Triangle(tpoly[0], tpoly[1], tpoly[2], c, direction.magnitude()))
+
+                i += 1
         return tris
 
 class Scene:
