@@ -343,17 +343,34 @@ class Triangle:
 class Input:
     def __init__(self):
         self.keys = []
+        self.mouse_buttons = []
+        self.mouse_pos = vector3(0,0,0)
+        self.mouse_delta = vector3(0,0,0)
 
     def update(self, evt):
         #update up and down values from previous update
         for k in self.keys:
             k.update()
 
+        for b in self.mouse_buttons:
+            b.update()
+
+        # reset mouse motion
+        self.mouse_delta = vector3()
+
         #read the new events
         for e in evt:
             if(e.type == pygame.KEYDOWN or e.type == pygame.KEYUP):
                 self.update_key(e.key, e.type)
+            elif(e.type == pygame.MOUSEMOTION):
+                pos = pygame.mouse.get_pos()
+                delta = pygame.mouse.get_rel()
+                self.mouse_pos = vector3(pos[0], pos[0], 0)
+                self.mouse_delta = vector3(delta[0], delta[0], 0)
+            # elif(e.type == pygame.MOUSEBUTTONDOWN or e.type == pygame.MOUSEBUTTONUP):
+            #     self.update_mouse_button()
 
+    # KEYBOARD
     def update_key(self, key, state):
         for k in self.keys:
             if k.key == key:
@@ -372,21 +389,51 @@ class Input:
         for k in self.keys:
             if k.key == key:
                 return k.holding
-
         return False
 
     def get_key_down(self, key):
         for k in self.keys:
             if k.key == key:
                 return k.down
-
         return False
 
     def get_key_up(self, key):
         for k in self.keys:
             if k.key == key:
                 return k.up
+        return False
+    
+    # MOUSE
+    def update_mouse_button(self, button, state):
+        for b in self.mouse_buttons:
+            if b.key == button:
+                b.update(state)
+                return
+        
+        b = self.add_mouse_button(button)
+        b.update(state)
 
+    def add_mouse_button(self, button):
+        b = Key(button)
+        self.mouse_buttons.append(b)
+        return b
+
+    def get_mouse_button(self, button):
+        for b in self.mouse_buttons:
+            if b.key == button:
+                return b.holding
+        return False
+
+    def get_mouse_button_down(self, button):
+        for b in self.mouse_buttons:
+            if b.key == button:
+                return b.down
+        return False
+
+    def get_mouse_button_up(self, button):
+        for b in self.mouse_buttons:
+            if b.key == button:
+                return b.up
         return False
 
 
@@ -403,11 +450,11 @@ class Key:
                 self.down = False
             if(self.up == True):
                 self.up = False
-        elif(state == pygame.KEYDOWN):
+        elif(state == pygame.KEYDOWN or state == pygame.MOUSEBUTTONDOWN):
             self.down = True
             self.holding = True
             self.up = False
-        elif(state == pygame.KEYUP):
+        elif(state == pygame.KEYUP or state == pygame.MOUSEBUTTONUP):
             self.down = False
             self.holding = False
             self.up = True
