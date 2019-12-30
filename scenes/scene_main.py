@@ -1,5 +1,6 @@
 from engine import *
 from scripts.cube_script import *
+from scripts.camera_controller import *
 
 class Scene_Main(Scene):
     def instantiate_objects(self):
@@ -7,6 +8,7 @@ class Scene_Main(Scene):
         camObj = GameObject("camera")
         camera = camObj.add_component(Camera)
         camera.setup(False)
+        camObj.add_component(CameraController)
 
         obj1 = GameObject("TestObject")
         pos1 = vector3(0, 0, 5)
