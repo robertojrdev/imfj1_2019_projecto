@@ -7,7 +7,7 @@ from material import *
 class Component:
     def __init__(self, game_object):
         self.game_object = game_object
-        self.transform = game_object.transform
+        self.transform = self.game_object.transform
 
 class Transform:
     def __init__(self, game_object):
@@ -154,7 +154,7 @@ class GameObject():
             print("THIS IS NOT A COMPONENT")
             return
             
-        newComp = comp(Component(self))
+        newComp = comp(self)
         self.components.append(newComp)
         return newComp
 
