@@ -1,4 +1,5 @@
 import math
+from mathf import *
 import numpy as np
 
 class InvalidOperationException(Exception):
@@ -90,7 +91,7 @@ class vector3:
 
     def normalize(self):
         mag = self.magnitude()
-        if mag > 0.001:
+        if mag > 0.0001:
             d = 1.0 / mag
             self.x *= d
             self.y *= d
@@ -102,7 +103,7 @@ class vector3:
 
     def normalized(self):
         mag = self.magnitude()
-        if mag > 0.001:
+        if mag > 0.0001:
             d = 1.0 / self.magnitude()
             return vector3(self.x * d, self.y * d, self.z * d)
         else:
@@ -132,6 +133,13 @@ class vector3:
     @staticmethod
     def multiply_matrix(v, m):
         return from_matrix(v.to_np4() @ m)
+    @staticmethod
+    def lerp(a, b, t):
+        c = vector3()
+        c.x = lerp(a.x, b.x, t)
+        c.y = lerp(a.y, b.y, t)
+        c.z = lerp(a.z, b.z, t)
+        return c
 
 def from_np3(n):
     return vector3(n[0], n[1], n[2])
