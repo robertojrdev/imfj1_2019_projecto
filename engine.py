@@ -4,6 +4,7 @@ import traceback
 from vector3 import *
 from quaternion import *
 from material import *
+from mathf import *
 
 class Component:
     def __init__(self, game_object):
