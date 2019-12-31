@@ -134,6 +134,12 @@ class ObjectBehaviour(Component):
     def update(self, delta_time):
         pass
 
+    def on_pre_render(self):
+        pass
+
+    def on_render(self):
+        pass
+
     def on_destroy(self):
         pass
 
@@ -166,15 +172,15 @@ class MeshRenderer(ObjectBehaviour):
         self.mesh = Mesh()
         self.debug_mode = False
 
-    def render(self, screen, clip_matrix, camera_position):
+    def on_pre_render(self):
         world_matrix = self.transform.get_matrix()
         tris = []
 
         if ((self.material != None) and (self.mesh)):
-            clr = self.material.color
-
-            colors = [(1,0,0),(0,1,0),(0,0,1),(.5,.5,0),(.5,0,.5),(0,.5,.5)]
-            i = 0
+            
+            if(self.debug_mode == True):
+                colors = [(1,0,0),(0,1,0),(0,0,1),(.5,.5,0),(.5,0,.5),(0,.5,.5)]
+                i = 0
 
             for triangle in self.mesh.tris:
                 tpoly = []
@@ -182,25 +188,26 @@ class MeshRenderer(ObjectBehaviour):
                     transformed = vector3.multiply_matrix(v, world_matrix)
                     tpoly.append(transformed)
 
-                edge1 = tpoly[1] - tpoly[0]
-                edge2 = tpoly[2] - tpoly[1]
-                normal = cross_product(edge1, edge2)
+                t = Triangle(tpoly[0], tpoly[1], tpoly[2])
+                center = t.get_center()
 
-                center  = (tpoly[0] + tpoly[1] + tpoly[2]) / 3
-                direction = center - camera_position
+                if(self.debug_mode == False):
+                    light_intensity = .05
+                    for light in Application.lights_buffer:
+                        light_intensity += light.calculate_intensity(center, t.normal)
+                    
+                    if(light_intensity > 1):
+                        light_intensity = 1
 
-                facingCameraDot = dot_product(normal.normalized(), direction.normalized())
-
-                if(facingCameraDot < 0):
-                    c = clr * -facingCameraDot
+                    t.color = self.material.color * light_intensity
+                else:
                     j = colors[math.floor(i / 2)]
-                    if(self.debug_mode):
-                        c = color(j[0],j[1],j[2],1)
-                        # c = color(j[0],j[1],j[2],1) * -facingCameraDot
-                    tris.append(Triangle(tpoly[0], tpoly[1], tpoly[2], c, direction.magnitude()))
+                    t.color = color(j[0],j[1],j[2],1)
+                    i += 1
 
-                i += 1
-        return tris
+                tris.append(t)
+
+        Application.add_triangle_to_buffer(tris)
 
 class Scene:
     def __init__(self, name):
@@ -215,10 +222,6 @@ class Scene:
 
     def add_object(self, obj):
         self.objects.append(obj)
-
-    def render(self):
-        if self.camera:
-            self.camera.render(self.objects)
             
 class Camera(ObjectBehaviour):
     def awake(self):
@@ -264,7 +267,7 @@ class Camera(ObjectBehaviour):
     def get_camera_matrix(self):
         return Transform.get_prs_matrix(-self.transform.position, self.transform.rotation.inverse(), vector3(1,1,1))
 
-    def render(self, objects):
+    def on_render(self):
         # Paint the background
         Application.screen.fill(self.background_color.tuple3())
 
@@ -273,11 +276,20 @@ class Camera(ObjectBehaviour):
         clip_matrix = camera_matrix @ projection_matrix
 
         triangles = []
+        cam_pos = self.transform.position
+        cam_fwd = self.transform.forward.normalized()
 
-        for obj in objects:
-            renderer = obj.get_component(MeshRenderer)
-            if (renderer):
-                triangles.extend(renderer.render(Application.screen, projection_matrix, self.transform.position))
+        for t in Application.triangles_buffer:
+            center = t.get_center()
+            direction = center - cam_pos
+
+            direction_dot = dot_product(cam_fwd, direction.normalized())
+
+            if(direction_dot > 0):
+                facing_camera_dot = dot_product(t.normal, direction.normalized())
+                if(facing_camera_dot < 0):
+                    t.depth = direction.magnitude()
+                    triangles.append(t)
 
         triangles.sort()
 
@@ -349,8 +361,35 @@ class Triangle:
         self.color = color
         self.depth = depth
 
+        edge1 = v2 - v1
+        edge2 = v3 - v2
+        self.normal = cross_product(edge1, edge2).normalized()
+
     def __lt__(self, other):
         return self.depth > other.depth
+
+    def get_center(self):
+        return (self.vertices[0] + self.vertices[1] + self.vertices[2]) / 3
+
+class PointLight(ObjectBehaviour):
+    def awake(self):
+        self.range = 5
+        self.intensity = 1
+        Application.lights_buffer.append(self)
+
+    def calculate_intensity(self, position, normal):
+        direction = self.transform.position - position
+        dist = direction.magnitude()
+        if(dist > self.range):
+            return 0
+
+        intensity = dot_product(normal.normalized(), direction.normalized())
+        intensity *= inverse_lerp(self.range, 0, dist)
+
+        if(intensity < 0):
+            return 0
+        else: 
+            return intensity
 
 class Input:
     keys = []
@@ -483,6 +522,8 @@ class Key:
 class Application:
     screen = None
     scene = None
+    triangles_buffer = []
+    lights_buffer = []
 
     @staticmethod
     def init(scene, res_x = 640, res_y = 480):
@@ -500,6 +541,13 @@ class Application:
         # Set scene
         Application.scene = scene(str(scene))
         Application.scene.instantiate_objects()
+
+    @staticmethod
+    def add_triangle_to_buffer(triangle):
+        if(isinstance(triangle, list)):
+            Application.triangles_buffer.extend(triangle)
+        elif(isinstance(triangle, Triangle)):
+            Application.triangles_buffer.append(triangle)
 
     @staticmethod
     def run():
@@ -530,8 +578,26 @@ class Application:
                     except Exception:
                         traceback.print_exc(10)
 
+            # Call on_pre_render
+            for o in Application.scene.objects:
+                for c in o.components:
+                    try:
+                        c.on_pre_render()
+                    except Exception:
+                        traceback.print_exc(10)
+
+            # Call on_render
+            for o in Application.scene.objects:
+                for c in o.components:
+                    try:
+                        c.on_render()
+                    except Exception:
+                        traceback.print_exc(10)
+
+            Application.triangles_buffer.clear()
+
             # Render Scene
-            Application.scene.render()
+            # Application.scene.render()
 
             # Swaps the back and front buffer, effectively displaying what we rendered
             pygame.display.flip()
@@ -539,4 +605,3 @@ class Application:
             # Updates the timer, so we we know how long has it been since the last frame
             delta_time = time.time() - prev_time
             prev_time = time.time()
-
