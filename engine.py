@@ -355,6 +355,30 @@ class Mesh:
 
         return mesh
 
+    @staticmethod
+    def from_obj(file_path, mesh = None):
+        if (mesh == None):
+            mesh = Mesh(file_path)
+        vertices = []
+
+        file = open(file_path, 'r')
+        for line in file:
+            if(line[0] == 'v'):
+                elements = line.split()
+                p1 = float(elements[1])
+                p2 = float(elements[2])
+                p3 = float(elements[3])
+                vertices.append(vector3(p1,p2,p3))
+            if(line[0] == 'f'):
+                elements = line.split()
+                v1 = int(elements[1]) - 1
+                v2 = int(elements[2]) - 1
+                v3 = int(elements[3]) - 1
+                triangle = Triangle(vertices[v1],vertices[v2],vertices[v3])
+                mesh.tris.append(triangle)
+
+        return mesh
+
 class Triangle:
     def __init__(self, v1, v2, v3, color = None, depth = 0):
         self.vertices = [v1,v2,v3]
