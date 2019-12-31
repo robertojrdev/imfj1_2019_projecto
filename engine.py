@@ -1,5 +1,6 @@
 import pygame
 import time
+import traceback
 from vector3 import *
 from quaternion import *
 from material import *
@@ -529,7 +530,10 @@ class Application:
             # Call update
             for o in Application.scene.objects:
                 for c in o.components:
-                    c.update(delta_time)
+                    try:
+                        c.update(delta_time)
+                    except Exception:
+                        traceback.print_exc(10)
 
             # Render Scene
             Application.scene.render()
