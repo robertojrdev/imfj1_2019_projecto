@@ -89,14 +89,24 @@ class vector3:
             raise(InvalidOperationException("dot", type(self), type(v)))
 
     def normalize(self):
-        d = 1.0 / self.magnitude()
-        self.x *= d
-        self.y *= d
-        self.z *= d
+        mag = self.magnitude()
+        if mag > 0.001:
+            d = 1.0 / mag
+            self.x *= d
+            self.y *= d
+            self.z *= d
+        else:
+            self.x = 0
+            self.y = 0
+            self.z = 0
 
     def normalized(self):
-        d = 1.0 / self.magnitude()
-        return vector3(self.x * d, self.y * d, self.z * d)
+        mag = self.magnitude()
+        if mag > 0.001:
+            d = 1.0 / self.magnitude()
+            return vector3(self.x * d, self.y * d, self.z * d)
+        else:
+            return vector3()
 
     def to_np3(self):
         return np.array([self.x, self.y, self.z])
