@@ -282,24 +282,27 @@ class Camera(ObjectBehaviour):
         for t in Application.triangles_buffer:
             center = t.get_center()
             direction = center - cam_pos
+            dir_norm = direction.normalized()
 
-            direction_dot = dot_product(cam_fwd, direction.normalized())
+            direction_dot = dot_product(cam_fwd, dir_norm)
 
             if(direction_dot > 0):
-                facing_camera_dot = dot_product(t.normal, direction.normalized())
+                facing_camera_dot = dot_product(t.normal, dir_norm)
                 if(facing_camera_dot < 0):
                     t.depth = direction.magnitude()
                     triangles.append(t)
 
         triangles.sort()
 
+        screen_w = Application.screen.get_width() * 0.5 
+        screen_h = Application.screen.get_height() * 0.5
         for t in triangles:
             proj_vert = []
             for v in t.vertices:
                 projected = vector3.multiply_matrix(v, clip_matrix)
 
-                projected.x = Application.screen.get_width() * 0.5 + projected.x
-                projected.y = Application.screen.get_height() * 0.5 - projected.y
+                projected.x = screen_w + projected.x
+                projected.y = screen_h  - projected.y
                 
                 proj_vert.append(( projected.x,  projected.y))
             
