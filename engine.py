@@ -629,3 +629,5 @@ class Application:
             # Updates the timer, so we we know how long has it been since the last frame
             delta_time = time.time() - prev_time
             prev_time = time.time()
+
+            pygame.display.set_caption("Ganda game - fps: " + str(int(1/delta_time)))
