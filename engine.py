@@ -215,11 +215,6 @@ class Scene:
         self.camera = None
         self.objects = []
 
-    # This function will be called when this scene is created to 
-    # instantiate the initial game objects
-    def instantiate_objects(self):
-        pass
-
     def add_object(self, obj):
         self.objects.append(obj)
             
@@ -565,9 +560,10 @@ class Application:
 
     @staticmethod
     def load_scene(scene):
-        # Set scene
-        Application.scene = scene(str(scene))
-        Application.scene.instantiate_objects()
+        # Run a python script which instantiate objects 
+        Application.scene = Scene(scene)
+        exec(open("scenes/" + scene + ".py").read())
+        
 
     @staticmethod
     def add_triangle_to_buffer(triangle):
