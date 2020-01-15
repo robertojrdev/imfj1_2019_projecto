@@ -34,7 +34,13 @@ class Transform:
         if(self._parent):
             return self.local_rotation * self._parent.rotation
         else:
-            return self.local_rotation
+            q = quaternion()
+            local = self.local_rotation
+            q.x = local.x
+            q.y = local.y
+            q.z = local.z
+            q.w = local.w
+            return q
 
     def set_rotation(self, value):
         self.local_rotation = value
