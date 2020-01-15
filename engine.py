@@ -187,6 +187,7 @@ class MeshRenderer(ObjectBehaviour):
         self.material = Material(color(1,1,1,1), "mat")
         self.mesh = Mesh()
         self.debug_mode = False
+        self.cull_by_distance = True
 
     def on_pre_render(self):
         world_matrix = self.transform.get_matrix()
@@ -194,6 +195,12 @@ class MeshRenderer(ObjectBehaviour):
 
         if ((self.material != None) and (self.mesh)):
             
+            if(self.cull_by_distance):
+                direction_from_camera = self.transform.position - Application.scene.camera.transform.position
+                dist = direction_from_camera.magnitude()
+                if(dist >= Application.scene.camera.culling_distance):
+                    return
+
             if(self.debug_mode == True):
                 colors = [(1,0,0),(0,1,0),(0,0,1),(.5,.5,0),(.5,0,.5),(0,.5,.5)]
                 i = 0
@@ -238,6 +245,7 @@ class Camera(ObjectBehaviour):
     def awake(self):
         Application.scene.camera = self
         self.background_color = color(.01,.01,.025)
+        self.culling_distance = 15
 
     def setup(self, ortho, fov = 33):
         self.ortho = ortho
