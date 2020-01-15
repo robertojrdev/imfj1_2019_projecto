@@ -11,9 +11,9 @@ class CameraController(ObjectBehaviour):
             mov_dir.x += 1
         if(Input.get_key(pygame.K_a)):
             mov_dir.x -= 1
-        if(Input.get_key(pygame.K_PAGEUP) or Input.get_key(pygame.K_q)):
+        if(Input.get_key(pygame.K_PAGEUP) or Input.get_key(pygame.K_e)):
             mov_dir.y += 1
-        if(Input.get_key(pygame.K_PAGEDOWN) or Input.get_key(pygame.K_e)):
+        if(Input.get_key(pygame.K_PAGEDOWN) or Input.get_key(pygame.K_q)):
             mov_dir.y -= 1
         if(Input.get_key(pygame.K_w)):
             mov_dir.z += 1
@@ -24,20 +24,28 @@ class CameraController(ObjectBehaviour):
         mov_dir.normalize()
         self.transform.position += mov_dir * delta_time
 
-        rot_dir = vector3()
+        pitch = vector3()
+        yaw = vector3()
         if(Input.get_key(pygame.K_RIGHT)):
-            rot_dir.z -= 1
+            yaw.y += 1
         if(Input.get_key(pygame.K_LEFT)):
-            rot_dir.z += 1
+            yaw.y -= 1
         if(Input.get_key(pygame.K_UP)):
-            rot_dir.x += 1
+            pitch.x += 1
         if(Input.get_key(pygame.K_DOWN)):
-            rot_dir.x -= 1
+            pitch.x -= 1
 
         # rot_dir.normalize()
-        rot_dir *= delta_time
-        rot_dir = from_rotation_vector(rot_dir.to_np3())
-        self.transform.rotation *= rot_dir
+        pitch *= delta_time
+        pitch = from_rotation_vector(pitch.to_np3())
+        
+        yaw *= delta_time
+        yaw = from_rotation_vector(yaw.to_np3())
+
+        rot = self.transform.rotation
+        rot *= pitch
+        rot = yaw * rot 
+        self.transform.rotation = rot
 
         if(Input.get_key_down(pygame.K_p)):
             bullet = GameObject("bullet")
