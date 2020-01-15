@@ -9,16 +9,19 @@ camera = camObj.add_component(Camera)
 camera.setup(False)
 # camObj.add_component(CameraController)
 light = camObj.add_component(PointLight)
-# light.range = 
+light.range = 20
 
 planeObj = GameObject("light")
 light = planeObj.add_component(PointLight)
 # light.range = 100
 planeObj.add_component(PlaneController)
-planeObj.transform.position = vector3(0,0,-1)
+planeObj.transform.position = vector3(0,0,0)
 plane_renderer = planeObj.add_component(MeshRenderer)
 plane_renderer.mesh = Mesh.from_obj("ship.obj")
 plane_renderer.material = Material(color(1,1,1,1), "TestMaterial1")
+
+camera.transform.parent = planeObj.transform
+camera.transform.position = vector3(0,0.1,-1)
 
 obj1 = GameObject("TestObject")
 pos1 = vector3(0, 0, 5)
