@@ -1,5 +1,6 @@
 import pygame
 import time
+import bisect
 import traceback
 from vector3 import *
 from quaternion import *
@@ -324,13 +325,11 @@ class Camera(ObjectBehaviour):
 
             direction_dot = dot_product(cam_fwd, dir_norm)
 
-            if(direction_dot > 0):
+            if(direction_dot > 0.5):
                 facing_camera_dot = dot_product(t.normal, dir_norm)
                 if(facing_camera_dot < 0):
                     t.depth = direction.magnitude()
-                    triangles.append(t)
-
-        triangles.sort()
+                    bisect.insort(triangles, t)
 
         screen_w = Application.screen.get_width() * 0.5 
         screen_h = Application.screen.get_height() * 0.5
