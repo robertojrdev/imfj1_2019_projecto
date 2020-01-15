@@ -84,7 +84,7 @@ class Transform:
     forward = property(get_forward)
 
     def get_matrix(self):
-        return Transform.get_prs_matrix(self.position, self.rotation.inverse(), self.scale)
+        return Transform.get_prs_matrix(self.position, self.rotation, self.scale)
 
     @staticmethod
     def get_position_matrix(position):
@@ -98,9 +98,19 @@ class Transform:
     def get_rotation_matrix(rotation):
         qrot  = as_rotation_matrix(rotation)
         rotation_matrix = np.identity(4)
-        for i in range(3):
-            for j in range(3):
-                rotation_matrix[i][j] = qrot[i][j]
+        
+        rotation_matrix[0][0] = qrot[0][0]
+        rotation_matrix[0][1] = qrot[1][0]
+        rotation_matrix[0][2] = qrot[2][0]
+        rotation_matrix[1][0] = qrot[0][1]
+        rotation_matrix[1][1] = qrot[1][1]
+        rotation_matrix[1][2] = qrot[2][1]
+        rotation_matrix[2][0] = qrot[0][2]
+        rotation_matrix[2][1] = qrot[1][2]
+        rotation_matrix[2][2] = qrot[2][2]
+        rotation_matrix[3,3] = 1
+
+        
 
         return rotation_matrix
 
@@ -260,7 +270,26 @@ class Camera(ObjectBehaviour):
         return self.proj_matrix
 
     def get_camera_matrix(self):
-        return Transform.get_prs_matrix(-self.transform.position, self.transform.rotation.inverse(), vector3(1,1,1))
+        pos = self.transform.position
+        trans = np.identity(4)
+        trans[3,0] = -pos.x
+        trans[3,1] = -pos.y
+        trans[3,2] = -pos.z    
+
+        qrot  = as_rotation_matrix(self.transform.rotation)
+        rotation_matrix = np.identity(4)
+        rotation_matrix[0][0] = qrot[0][0]
+        rotation_matrix[0][1] = qrot[0][1]
+        rotation_matrix[0][2] = qrot[0][2]
+        rotation_matrix[1][0] = qrot[1][0]
+        rotation_matrix[1][1] = qrot[1][1]
+        rotation_matrix[1][2] = qrot[1][2]
+        rotation_matrix[2][0] = qrot[2][0]
+        rotation_matrix[2][1] = qrot[2][1]
+        rotation_matrix[2][2] = qrot[2][2]
+        rotation_matrix[3,3] = 1
+
+        return trans @ rotation_matrix
 
     def on_render(self):
         # Paint the background
