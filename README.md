@@ -1,10 +1,12 @@
 # Introdução à Matemática e Física Para Videojogos I - Final Project
 
-This is a very rudimentary, wireframe 3d engine.
+###PyEngine
+Roberto Gomes
+a21700491
 
-![alt text](https://github.com/VideojogosLusofona/imfj1_2019_projecto/raw/master/screenshots/title.png "Sample application")
+![alt text](https://github.com/robertojrdev/imfj1_2019_projecto/raw/master/Screenshot/title.png "Sample application")
 
-This serves as a basis for the "Introdução à Matemática e Física Para Videojogos I" course, on the [Licenciatura em Videojogos][lv] da
+This is the result of the final project for "Introdução à Matemática e Física Para Videojogos I" course, on the [Licenciatura em Videojogos][lv] da
 [Universidade Lusófona de Humanidades e Tecnologias][ULHT] in Lisbon.
 
 The engine was built using:
@@ -14,53 +16,60 @@ The engine was built using:
 * Numpy-quaternion (https://pypi.org/project/numpy-quaternion/)
 
 There is a sample application that can be run by using:
-`py.exe sample.py` or `python sample.py` or `python3.6 sample.py`, depending on your Python installation.
-
+`py.exe main.py` or `python main.py` or `python3.6 main.py`, depending on your Python installation.
+ 
 ## Assignment
 
-The assignment for the course is as follows:
-* Build a "Viewer" application. You can use the sample application as a basis. That application has to feature the following functionality:
-  - Display a 3d object (see below) in the centre of the screen. Control of the visualization has to be done using the following keys:
-    - Left/Right arrow: Rotate object around its Y axis
-    - Up/Down arrow: Rotate object around its X axis
-    - PgUp/PgDown: Rotate object around its Z axis
-    - W/S: Move object up and down relative to the screen
-    - A/D: Move object right and left relative to the screen
-    - Q/E: Move object forward or back relative to the screen
-  - Create a model other than a cube for this display. That model can be loaded from a file (in a format like JSON, etc) or can be built totally   in code. The model has to include sub-objects (like in the sample the object is made of the red cube and a child green cube)
+In short, the assignment for the course is as follows:
+* Build a "Viewer" application. That application has to feature the following functionality:
+  - Display a 3d object. Control of the visualization has to be done using keys.
+  - Create a model other than a cube for this display.
 * Build a "FPS-like" application.
-  - Create an environment where the player can roam using standard FPS controls. The environment can be just a series of cubes with different scales and positions
+  - Create an environment where the player can roam using standard FPS controls.
   - Implement backface culling.
-    - Backface culling stops the polygons that are facing away from the camera from being renderer
-    - Hint: You can use the "face normal" and a dot product to detect these cases
-    - You can check this video for a more in-depth explanation: https://www.youtube.com/watch?v=ShTiQGxiZRk
   - Implement filled geometry, replacing the wireframe
-    - Hint: you'll have to sort objects by distance and draw back to front)
   - Stop objects that are behind the camera from being renderered
-    - You can do this per-object, or per polygon
-  - Implement very simple point lighting:
-    - Create a PointLight3d class and extend the Scene class so you're able to add light(s) to it
-    - Implement shading based on the light:
-      - Hint: Light intensity = max(0, dot(Face Normal, Incoming Light Direction))
-      - Hint: Polygon Color = Light Intensity * Color
+  - Implement very simple point lighting.
+  - Implement shading based on the light.
       
-## Project delivery
+## Results
 
-* Project can be made individually or with a group of up to 3 students.
-* Git commit history will be analyzed to see individual work of students in the overall project
-* Project has to be delivered up 20th January 2020 (midnight), and link delivered on the course's Moodle page
-  - Deliverables have to include a link to the Github repo
-    - If you want to use a private repository, instead of a public one, you can deliver all the files in a .zip file, __**INCLUDING**__ the .git directory for git usage analysis 
-  - Project has to include a report, in a `readme.md` file. This report has to include the work done on the project, and the individual contributions of the group.
-  - Report should also include (besides the names and numbers of students), their Github account username.
-  - Report has to be formated in Markdown, as taught on the November workshop.
-  - Extra credit on reports that include a short postmortem, where students explain what went right with the project and what went wrong
-* Grade will consider the following:
-  - How much was achieved from the overal goals
-    - Viewer application is considered the minimum viable delivery
-  - Functionality and lack of bugs
-  - Overall quality of code, including documentation
-  - GIT usage throughout the project, as well as individual contributions of students
+All requirements was fulfilled and the project was successfully completed. The base goals served well for better understanding the mathematical concepts involved, mainly matrices transformations and quaternion usage.
+
+To complete this work I based in Unity Engine structure to create a similar workflow, utilizing similar concepts of GameObjects, Transforms, Components, Scenes, MonoBehaviour and coroutines. Even though these concepts were very simplified the idea is there.
+
+## Structure
+
+The core of the engine is the application.py script, the main loop is here. It need to be initialized from outside, when it is done it will start pygame and make sure everything is ready to start. You can pass a scene file to be started, it's no necessary though and can be made later on.
+After that the loop must be started, it is done manually by calling run().
+
+At this point, the engine is running (or should be...) and a Scene to hold all game objects is created.
+
+There are two different concepts of scenes. One refer to the file containing all game objects to be loaded and their scripts, you can load multiple of them at the same time, their objects will simply be added to the game. The other is the application scene which will hold all game objects instantiated, the application can have only one of this.
+
+The GameObjects have a Transform and are basically containers of Components. You cannot instantiate them if the application is not running, and once you instantiate them they will be added to the application scene automatically.
+
+At the main loop the there are a few stages:
+ * Uptade Inputs
+ * Update
+ * On Pre Render
+ * On Render
+ * Flip Render Buffer
+ * Delta Time
+
+These stages controls the flow of the application and Behaviour Objects respond to them. Every Object Behaviour added to objects in the application scene will receive Update, OnPreRender and OnRender messages.
+
+ObjectBehaviour are how scripts are added to GameObjects adding behaviour to them. you must simply create a class which derive from ObjectBehaviour and override the message functions to do it. Most of the time it will be the Update.
+
+To start rendering things on the screen you must have a Camera, it is a Component, and must be attached to a GameObject. The application scene can have multiple cameras, but only one of them will render to screen. Every time you add a new camera to the scene it will become the new active camera.
+
+To display a object in 3D you must have a MeshRenderer in the GameObject, and add a Mesh to it by importing a .obj file or creating a primitive, both using the Mesh class.
+
+Without any light source the screen will be black, so you must add them to scene. You do it by adding a PointLight to a GameObject.
+
+To use keyboard or mouse inputs you must use Input class, it is updated every frame and has functions to check the state of the keys.
+
+
 
 ## Installation of required modules
 
@@ -88,26 +97,6 @@ For numpy-quaternion, you can get the files from `https://www.lfd.uci.edu/~gohlk
 
 To install a wheel manually, you just have to run the command: `pip install <wheel name>` or `python -m pip install <wheel name>` from the directory where the wheel was downloaded to.
 
-## Work on the project
-
-We recomend building a fork of this project, and doing additional work on your repository. 
-
-* Create a copy (fork) of this repository (normally called _upstream_) in your Github account (**Fork** button in the upper right corner). The copy of the repository is usually called _origin_
-* Get a local copy (on your PC) of the _origin_ repository, with the comand `git clone https://github.com/<your_username>/imfj1_2019_projecto.git` (replace `<your username>` by your username in Github)
-* Link the local repository with the remote _upstream_ repository with the command: `git remote add upstream https://VideojogosLusofona/imfj1_2019_projecto.git`
-
-Periodically, update your repository with changes done on the source `imfj1_2019_projecto` repo (in case bug fixes are introduced):
-
-* Make sure you're working on the _master_ branch:
-  - `git checkout master`
-* Download any updates on the imfj1_2019_projecto source repository by merging them with your _master_ branch:
-  - `git fetch upstream`
-  - `git merge upstream/master`
-* Upload (_push_) the changes on _upstream_ to the _origin_ repository:
-  - `git push origin master`
-
-Do your normal work and commit/pull/push as taught. Grade will take in account how well GIT is used throughout the project.
-
 ## Licenses
 
 All code in this repo is made available through the [GPLv3] license.
@@ -116,11 +105,10 @@ The text and all the other files are made available through the
 
 ## Metadata
 
-* Autor: [Diogo Andrade][]
+* Autor: [Roberto Gomes][]
+* Modified document from: [original][]
 
-[Diogo Andrade]:https://github.com/DiogoDeAndrade
+[Roberto Gomes]:https://github.com/robertojrdev
+[original]:https://github.com/VideojogosLusofona/imfj1_2019_projecto
 [GPLv3]:https://www.gnu.org/licenses/gpl-3.0.en.html
 [CC BY-NC-SA 4.0]:https://creativecommons.org/licenses/by-nc-sa/4.0/
-[Bfxr]:https://www.bfxr.net/
-[ULHT]:https://www.ulusofona.pt/
-[lv]:https://www.ulusofona.pt/licenciatura/videojogos
