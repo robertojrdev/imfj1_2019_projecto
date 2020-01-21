@@ -34,13 +34,13 @@ In short, the assignment for the course is as follows:
       
 ## Results
 
-All requirements was fulfilled and the project was successfully completed. The base goals served well for better understanding the mathematical concepts involved, mainly matrices transformations and quaternion usage.
+All requirements were fulfilled and the project was successfully completed. The base goals served well for a better understanding of the mathematical concepts involved, mainly matrices transformations and quaternion usage.
 
-To complete this work I based in Unity Engine structure to create a similar workflow, utilizing similar concepts of GameObjects, Transforms, Components, Scenes, MonoBehaviour and coroutines. Even though these concepts were very simplified the idea is there.
+To complete this work I based in Unity Engine structure to create a similar workflow, utilizing concepts of GameObjects, Transforms, Components, Scenes, MonoBehaviour, and coroutines. Even though these concepts were very simplified the idea is there.
 
 ## Structure
 
-The core of the engine is the application.py script, the main loop is here. It need to be initialized from outside, when it is done it will start pygame and make sure everything is ready to start. You can pass a scene file to be started, it's no necessary though and can be made later on.
+The core of the engine is the application.py script, the main loop is here. It needs to be initialized from outside. When it is done it will start pygame and make sure everything is ready to start. You can pass a scene file to be started, it's not necessary though and can be made later on.
 After that the loop must be started, it is done manually by calling run().
 
 At this point, the engine is running (or should be...) and a Scene to hold all game objects is created.
@@ -57,15 +57,15 @@ At the main loop the there are a few stages:
  * Flip Render Buffer
  * Delta Time
 
-These stages controls the flow of the application and Behaviour Objects respond to them. Every Object Behaviour added to objects in the application scene will receive Update, OnPreRender and OnRender messages.
+These stages control the flow of the application and Behaviour Objects respond to them. Every Object Behaviour added to objects in the application scene will receive Update, OnPreRender, and OnRender messages.
 
-ObjectBehaviour are how scripts are added to GameObjects adding behaviour to them. you must simply create a class which derive from ObjectBehaviour and override the message functions to do it. Most of the time it will be the Update.
+ObjectBehaviour is how scripts are added to GameObjects adding behavior to them. you must simply create a class that derives from ObjectBehaviour and override the message functions to do it. Most of the time it will be the Update.
 
 To start rendering things on the screen you must have a Camera, it is a Component, and must be attached to a GameObject. The application scene can have multiple cameras, but only one of them will render to screen. Every time you add a new camera to the scene it will become the new active camera.
 
-To display a object in 3D you must have a MeshRenderer in the GameObject, and add a Mesh to it by importing a .obj file or creating a primitive, both using the Mesh class.
+To display an object in 3D you must have a MeshRenderer in the GameObject, and add a Mesh to it by importing a .obj file or creating a primitive, both using the Mesh class.
 
-Without any light source the screen will be black, so you must add them to scene. You do it by adding a PointLight to a GameObject.
+Without any light source the screen will be black, so you must add them to the scene. You do it by adding a PointLight to a GameObject.
 
 To use keyboard or mouse inputs you must use Input class, it is updated every frame and has functions to check the state of the keys.
 
