@@ -6,7 +6,7 @@ from application import Application as app
 def main():
 
     # Init application instance with main scene
-    app.init("main", 1000, 1000)
+    app.init("main", 800, 600)
 
     #Run application
     # cProfile.run("app.run()")

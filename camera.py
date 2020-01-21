@@ -126,4 +126,4 @@ class Camera(ObjectBehaviour):
                 proj_vert.append(( projected.x,  projected.y))
             
             pygame.draw.polygon(Application.screen, t.color.tuple3(), proj_vert, 0)
-            pygame.draw.polygon(Application.screen, (10,10,10), proj_vert, 1)
+            # pygame.draw.polygon(Application.screen, (10,10,10), proj_vert, 1)
