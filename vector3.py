@@ -132,7 +132,7 @@ class vector3:
         return vector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z)
     @staticmethod
     def multiply_matrix(v, m):
-        return from_matrix(v.to_np4() @ m)
+        return vector3.from_matrix(v.to_np4() @ m)
     @staticmethod
     def lerp(a, b, t):
         c = vector3()
@@ -141,18 +141,23 @@ class vector3:
         c.z = lerp(a.z, b.z, t)
         return c
 
-def from_np3(n):
-    return vector3(n[0], n[1], n[2])
+    @staticmethod
+    def from_np3(n):
+        return vector3(n[0], n[1], n[2])
 
-def from_np4(v):
-    return vector3(v[0], v[1], v[2])
+    @staticmethod
+    def from_np4(v):
+        return vector3(v[0], v[1], v[2])
 
-def from_matrix(v):
-    return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
+    @staticmethod
+    def from_matrix(v):
+        return vector3(v[0] / v[3], v[1] / v[3], v[2] / v[3])
 
-def dot_product(v1, v2):
-    return v1.dot(v2)
+    @staticmethod
+    def dot_product(v1, v2):
+        return v1.dot(v2)
 
-def cross_product(v1, v2):
-    return v1.cross(v2)
+    @staticmethod
+    def cross_product(v1, v2):
+        return v1.cross(v2)
 

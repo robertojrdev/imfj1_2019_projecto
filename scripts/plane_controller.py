@@ -1,8 +1,6 @@
 import pygame
-from engine import ObjectBehaviour, Input, Transform
-from vector3 import *
-from quaternion import *
-from scripts.bullet import *
+from engine import ObjectBehaviour, GameObject, Input, vector3, rotate_vectors, from_rotation_vector
+from scripts.bullet import Bullet
 
 class PlaneController(ObjectBehaviour):
     def update(self, delta_time):
@@ -16,7 +14,7 @@ class PlaneController(ObjectBehaviour):
         if(Input.get_key(pygame.K_s)):
             mov_dir.z -= 1
 
-        mov_dir = from_np3(rotate_vectors(self.transform.rotation, mov_dir.to_np3()))
+        mov_dir = vector3.from_np3(rotate_vectors(self.transform.rotation, mov_dir.to_np3()))
         mov_dir.normalize()
         self.transform.position += mov_dir * delta_time * 1.5
 

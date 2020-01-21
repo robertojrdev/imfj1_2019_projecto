@@ -1,39 +1,20 @@
-import pygame
-from vector3 import *
+from vector3 import vector3
+from triangle import Triangle
 
 class Mesh:
     def __init__(self, name = "UnknownMesh"):
         self.name = name
-        self.polygons = []
+        self.tris = []
 
     def offset(self, v):
         new_polys = []
-        for poly in self.polygons:
+        for poly in self.tris:
             new_poly = []
             for p in poly:
                 new_poly.append(p + v)
             new_polys.append(new_poly)
 
-        self.polygons = new_polys
-
-    def render(self, screen, matrix, material):
-        c = material.color.tuple3()        
-
-        for poly in self.polygons:
-            tpoly = []
-            spoly = []
-            for v in poly:
-                vout = v.to_np4()
-                vout = vout @ matrix
-                transformed = from_np4(vout)
-
-                transformed.x += screen.get_width() * 0.5
-                transformed.y = screen.get_height() * 0.5 - transformed.y
-                
-                tpoly.append(( transformed.x,  transformed.y))
-
-            pygame.draw.polygon(screen, c, tpoly, material.line_width)
-
+        self.tris = new_polys
 
     @staticmethod
     def create_cube(size, mesh = None):
@@ -56,13 +37,39 @@ class Mesh:
         if (mesh == None):
             mesh = Mesh("UnknownQuad")
 
-        poly = []
-        poly.append(origin + axis0 + axis1)
-        poly.append(origin + axis0 - axis1)
-        poly.append(origin - axis0 - axis1)
-        poly.append(origin - axis0 + axis1)
+        v1 = origin + axis0 + axis1
+        v2 = origin + axis0 - axis1
+        v3 = origin - axis0 - axis1
+        v4 = origin - axis0 + axis1
 
-        mesh.polygons.append(poly)
+        t1 = Triangle(v1, v2, v3)
+        t2 = Triangle(v1, v3, v4)
+
+        mesh.tris.append(t1)
+        mesh.tris.append(t2)
 
         return mesh
-    
+
+    @staticmethod
+    def from_obj(file_path, mesh = None):
+        if (mesh == None):
+            mesh = Mesh(file_path)
+        vertices = []
+
+        file = open(file_path, 'r')
+        for line in file:
+            if(line[0] == 'v'):
+                elements = line.split()
+                p1 = float(elements[1])
+                p2 = float(elements[2])
+                p3 = float(elements[3])
+                vertices.append(vector3(p1,p2,p3))
+            if(line[0] == 'f'):
+                elements = line.split()
+                v1 = int(elements[1]) - 1
+                v2 = int(elements[2]) - 1
+                v3 = int(elements[3]) - 1
+                triangle = Triangle(vertices[v1],vertices[v2],vertices[v3])
+                mesh.tris.append(triangle)
+
+        return mesh

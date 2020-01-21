@@ -1,4 +1,4 @@
-from engine import *
+from engine import ObjectBehaviour, MeshRenderer, Mesh, Material, color
 
 class Bullet(ObjectBehaviour):
     def awake(self):

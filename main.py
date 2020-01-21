@@ -1,5 +1,6 @@
 import cProfile
-from engine import Application as app
+
+from application import Application as app
 
 # Define a main function, just to keep things nice and tidy
 def main():

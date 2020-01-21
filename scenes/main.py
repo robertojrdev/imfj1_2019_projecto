@@ -7,7 +7,6 @@ from scripts.plane_controller import *
 camObj = GameObject("camera")
 camera = camObj.add_component(Camera)
 camera.setup(False)
-# camObj.add_component(CameraController)
 light = camObj.add_component(PointLight)
 light.range = 20
 
@@ -23,6 +22,7 @@ plane_renderer.material = Material(color(1,1,1,1), "TestMaterial1")
 camera.transform.parent = planeObj.transform
 camera.transform.position = vector3(0,0.1,-1)
 
+#First Cube
 obj1 = GameObject("TestObject")
 pos1 = vector3(0, 0, 5)
 obj1.transform.position = pos1
@@ -32,6 +32,7 @@ obj1_renderer.mesh = Mesh.create_cube((1, 1, 1))
 obj1_renderer.material = Material(color(1,0,0,1), "TestMaterial1")
 obj1.add_component(Cube)
 
+#Second Cube
 obj2 = GameObject("TestObject")
 obj2.transform.position = vector3(0,.75,0)
 obj2.transform.scale = vector3(.5,.5,.5)
@@ -40,6 +41,7 @@ obj2_renderer.mesh = Mesh.create_cube((1, 1, 1))
 obj2_renderer.material = Material(color(0,1,0,1), "TestMaterial1")
 obj2.transform.parent = obj1.transform
 
+#Third cube
 obj3 = GameObject("TestObject")
 obj3.transform.position = vector3(0,.75,0)
 obj3.transform.scale = vector3(.5,.5,.5)

@@ -1,4 +1,6 @@
-from engine import *
+import pygame
+import math
+from engine import ObjectBehaviour, Input, vector3, from_rotation_vector
 
 class Cube(ObjectBehaviour):
     def awake(self):

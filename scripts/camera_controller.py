@@ -1,29 +1,30 @@
 import pygame
-from engine import ObjectBehaviour, Input, Transform
-from vector3 import *
-from quaternion import *
-from scripts.bullet import *
+from engine import ObjectBehaviour, Input, vector3, rotate_vectors, from_rotation_vector
 
 class CameraController(ObjectBehaviour):
     def update(self, delta_time):
+        
+        #get direction
         mov_dir = vector3()
-        if(Input.get_key(pygame.K_d)):
+        if(Input.get_key(pygame.K_d)): #right
             mov_dir.x += 1
-        if(Input.get_key(pygame.K_a)):
+        if(Input.get_key(pygame.K_a)): #left
             mov_dir.x -= 1
-        if(Input.get_key(pygame.K_PAGEUP) or Input.get_key(pygame.K_e)):
+        if(Input.get_key(pygame.K_PAGEUP) or Input.get_key(pygame.K_e)): #up
             mov_dir.y += 1
-        if(Input.get_key(pygame.K_PAGEDOWN) or Input.get_key(pygame.K_q)):
+        if(Input.get_key(pygame.K_PAGEDOWN) or Input.get_key(pygame.K_q)): #down
             mov_dir.y -= 1
-        if(Input.get_key(pygame.K_w)):
+        if(Input.get_key(pygame.K_w)): #fwrd
             mov_dir.z += 1
-        if(Input.get_key(pygame.K_s)):
+        if(Input.get_key(pygame.K_s)): #backward
             mov_dir.z -= 1
 
-        mov_dir = from_np3(rotate_vectors(self.transform.rotation, mov_dir.to_np3()))
+        #rotate direction vector by camera rotation, normalize and apply transformation scaled by delta_time
+        mov_dir = vector3.from_np3(rotate_vectors(self.transform.rotation, mov_dir.to_np3()))
         mov_dir.normalize()
         self.transform.position += mov_dir * delta_time
 
+        #get rotation from inputs
         pitch = vector3()
         yaw = vector3()
         if(Input.get_key(pygame.K_RIGHT)):
@@ -35,21 +36,16 @@ class CameraController(ObjectBehaviour):
         if(Input.get_key(pygame.K_DOWN)):
             pitch.x -= 1
 
-        # rot_dir.normalize()
+        #get quaternion from pitch and yaw scaled by delta_time
         pitch *= delta_time
         pitch = from_rotation_vector(pitch.to_np3())
         
         yaw *= delta_time
         yaw = from_rotation_vector(yaw.to_np3())
 
+        #apply pitch and then yaw
         rot = self.transform.rotation
         rot *= pitch
-        rot = yaw * rot 
+        rot = yaw * rot #specifically in this order to rotate over the world Y axis instead of camera axis (unity like :D)
         self.transform.rotation = rot
-
-        if(Input.get_key_down(pygame.K_p)):
-            bullet = GameObject("bullet")
-            bullet.transform.position = self.transform.position
-            bullet.transform.rotation = self.transform.rotation
-            bullet.add_component(Bullet)
         
