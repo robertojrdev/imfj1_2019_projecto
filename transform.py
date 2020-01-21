@@ -2,6 +2,8 @@ from vector3 import *
 from quaternion import *
 
 class Transform:
+    """position, rotation and scale of an object
+    """
     def __init__(self, game_object):
         self.game_object = game_object
         self.local_position = vector3()

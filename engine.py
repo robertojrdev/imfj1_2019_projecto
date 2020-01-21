@@ -1,3 +1,5 @@
+#the scripts can import entire engine or it's classes through here like "from engine import color, vector3, component...."
+
 import pygame
 from color import color
 from vector3 import vector3

@@ -2,6 +2,8 @@ import pygame
 from engine import ObjectBehaviour, Input, vector3, rotate_vectors, from_rotation_vector
 
 class CameraController(ObjectBehaviour):
+    """Unity like camera movement (can be attached to any GameObject)
+    """
     def update(self, delta_time):
         
         #get direction

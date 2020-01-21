@@ -2,6 +2,16 @@ from vector3 import vector3
 
 class Triangle:
     def __init__(self, v1, v2, v3, color = None, depth = 0):
+        """        
+        Arguments:
+            v1 {vector3} -- vertice 0
+            v2 {vector3} -- vertice 1
+            v3 {vector3} -- vertice 2
+        
+        Keyword Arguments:
+            color {color} -- the color the triangle will be rendered (default: {None})
+            depth {int} -- distance from camera (default: {0})
+        """
         self.vertices = [v1,v2,v3]
         self.color = color
         self.depth = depth

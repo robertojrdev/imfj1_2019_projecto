@@ -2,6 +2,8 @@ from vector3 import vector3
 from triangle import Triangle
 
 class Mesh:
+    """A class that allows creating or modifying meshes from scripts.
+    """
     def __init__(self, name = "UnknownMesh"):
         self.name = name
         self.tris = []
@@ -18,6 +20,17 @@ class Mesh:
 
     @staticmethod
     def create_cube(size, mesh = None):
+        """Create a unity cube scaled by size
+        
+        Arguments:
+            size {float} -- size to scale
+        
+        Keyword Arguments:
+            mesh {Mesh} -- mesh to add the triangles to (default: {None})
+        
+        Returns:
+            Mesh -- a mesh with the given triangles
+        """
         if (mesh == None):
             mesh = Mesh("UnknownCube")
 
@@ -52,6 +65,17 @@ class Mesh:
 
     @staticmethod
     def from_obj(file_path, mesh = None):
+        """Load a mesh from an .obj file
+        
+        Arguments:
+            file_path {string} -- the path to the file
+        
+        Keyword Arguments:
+            mesh {Mesh} -- mesh to assign the polygons (default: {None})
+        
+        Returns:
+            Mesh -- a mesh with the loaded polygons
+        """
         if (mesh == None):
             mesh = Mesh(file_path)
         vertices = []

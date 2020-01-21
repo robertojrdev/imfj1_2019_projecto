@@ -3,6 +3,10 @@ from vector3 import vector3
 from key import Key
 
 class Input:
+    """Handdle all inputs from system events.\n
+        Must be updated at the game loop\n
+        Use pygame keys to get key states in the Input class        
+    """
     keys = []
     mouse_buttons = []
     mouse_pos = vector3(0,0,0)

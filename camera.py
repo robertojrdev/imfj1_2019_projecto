@@ -9,12 +9,22 @@ from object_behaviour import ObjectBehaviour
 from vector3 import vector3
 
 class Camera(ObjectBehaviour):
+    """A camera used to see the world
+    """
     def awake(self):
         Application.scene.camera = self
         self.background_color = color(.01,.01,.025)
         self.culling_distance = 15
 
     def setup(self, ortho, fov = 33):
+        """Sutup
+        
+        Arguments:
+            ortho {bool} -- true is ortho false is perspective
+        
+        Keyword Arguments:
+            fov {float} -- field of view (default: {33})
+        """
         self.ortho = ortho
         self.fov = math.radians(fov)
         self.near = 0.1
@@ -76,14 +86,17 @@ class Camera(ObjectBehaviour):
         # Paint the background
         Application.screen.fill(self.background_color.tuple3())
 
+        #get clip matrix
         camera_matrix = self.get_camera_matrix()
         projection_matrix = self.get_projection_matrix()
         clip_matrix = camera_matrix @ projection_matrix
 
+        #prepare
         triangles = []
         cam_pos = self.transform.position
         cam_fwd = self.transform.forward.normalized()
 
+        #get triangles from buffer to render
         for t in Application.triangles_buffer:
             center = t.get_center()
             direction = center - cam_pos
@@ -91,12 +104,15 @@ class Camera(ObjectBehaviour):
 
             direction_dot = vector3.dot_product(cam_fwd, dir_norm)
 
+            #only render the ones ahead of the camera
             if(direction_dot > 0.5):
                 facing_camera_dot = vector3.dot_product(t.normal, dir_norm)
+                #back-face culling
                 if(facing_camera_dot < 0):
                     t.depth = direction.magnitude()
                     bisect.insort(triangles, t)
 
+        #project triangles and draw them (transform from 3D to 2D to render in a flat screen)
         screen_w = Application.screen.get_width() * 0.5 
         screen_h = Application.screen.get_height() * 0.5
         for t in triangles:

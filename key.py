@@ -1,6 +1,8 @@
 import pygame
 
 class Key:
+    """Represents a key state
+    """
     def __init__(self, key):
         self.key = key
         self.down = False

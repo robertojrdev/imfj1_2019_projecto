@@ -3,6 +3,8 @@ import math
 from engine import ObjectBehaviour, Input, vector3, from_rotation_vector
 
 class Cube(ObjectBehaviour):
+    """A cube which rotates if space key is pressed
+    """
     def awake(self):
         self.counter = 0
 

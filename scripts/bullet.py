@@ -1,6 +1,8 @@
 from engine import ObjectBehaviour, MeshRenderer, Mesh, Material, color
 
 class Bullet(ObjectBehaviour):
+    """ Create a 0.1f size cube and move it forward indefintally
+    """
     def awake(self):
         renderer = self.game_object.add_component(MeshRenderer)
         renderer.mesh = Mesh.create_cube((0.1,0.1,0.1))
